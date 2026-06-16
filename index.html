@@ -442,39 +442,57 @@ header h1{
 </div>
 
 <script>
+// 1. Mapa de Categorias Expandido
 const mapaCategorias = {
-    "Água com gás": "Bebidas", "Água mineral": "Bebidas", "Refrigerante": "Bebidas", "Café": "Matinais", "Leite": "Matinais", "Erva-mate": "Matinais", "Achocolatado": "Matinais", "Creme de avelã": "Matinais",
-    "Arroz": "Mercearia", "Feijão": "Mercearia", "Macarrão": "Mercearia", "Açúcar": "Mercearia", "Óleo": "Mercearia", "Sal": "Mercearia", "Farinha de trigo": "Mercearia", "Farofa": "Mercearia", "Vinagre": "Mercearia",
-    "Molho de tomate": "Mercearia", "Milho verde": "Enlatados", "Ervilha": "Enlatados", "Maionese": "Molhos", "Ketchup": "Molhos", "Mostarda": "Molhos",
-    "Carne bovina": "Açougue", "Carne Moída": "Açougue", "Frango": "Açougue", "Linguiça": "Açougue", "Queijo": "Frios e Laticínios", "Presunto": "Frios e Laticínios", "Ovos": "Frios e Laticínios",
-    "Batata": "Hortifrúti", "Batata palha": "Mercearia", "Cebola": "Hortifrúti", "Tomate": "Hortifrúti", "Cenoura": "Hortifrúti", "Alface": "Hortifrúti", "Alho": "Hortifrúti",
-    "Banana": "Hortifrúti", "Maçã": "Hortifrúti", "Laranja": "Hortifrúti", "Pão": "Padaria", "Biscoito Trakinas": "Padaria", "Biscoito Oreo": "Padaria", "Biscoito Club Social": "Padaria", "Margarina": "Frios e Laticínios", "Chimia/Geleia": "Matinais",
-    "Papel higiênico": "Higiene", "Papel toalha": "Limpeza", "Amaciante Girando Sol": "Limpeza", "Lava Roupas Girando Sol": "Limpeza", "Detergente": "Limpeza", "Sabão em pó": "Limpeza", "Água sanitária": "Limpeza", "Desinfetante": "Limpeza", "Esponja de louça": "Limpeza",
-    "Shampoo": "Higiene", "Condicionador": "Higiene", "Sabonete": "Higiene", "Creme dental": "Higiene", "Cerveja Heineken": "Bebidas"
+    "Água com gás": "Bebidas", "Água mineral": "Bebidas", "Refrigerante": "Bebidas", 
+    "Suco": "Bebidas", "Energético": "Bebidas", "Cerveja Heineken": "Bebidas", 
+    "Café": "Matinais", "Leite": "Matinais", "Erva-mate": "Matinais", 
+    "Achocolatado": "Matinais", "Creme de avelã": "Matinais", "Chimia/Geleia": "Matinais",
+    "Arroz": "Mercearia", "Feijão": "Mercearia", "Macarrão": "Mercearia", 
+    "Açúcar": "Mercearia", "Óleo": "Mercearia", "Sal": "Mercearia", 
+    "Farinha de trigo": "Mercearia", "Farofa": "Mercearia", "Vinagre": "Mercearia",
+    "Molho de tomate": "Mercearia", "Milho verde": "Enlatados", "Ervilha": "Enlatados", 
+    "Maionese": "Molhos", "Ketchup": "Molhos", "Mostarda": "Molhos",
+    "Carne bovina": "Açougue", "Carne Moída": "Açougue", "Frango": "Açougue", 
+    "Linguiça": "Açougue", "Bacon": "Açougue", "Queijo": "Frios e Laticínios", 
+    "Presunto": "Frios e Laticínios", "Ovos": "Frios e Laticínios", "Margarina": "Frios e Laticínios",
+    "Batata": "Hortifrúti", "Batata palha": "Mercearia", "Cebola": "Hortifrúti", 
+    "Tomate": "Hortifrúti", "Cenoura": "Hortifrúti", "Alface": "Hortifrúti", "Alho": "Hortifrúti",
+    "Banana": "Hortifrúti", "Maçã": "Hortifrúti", "Laranja": "Hortifrúti", 
+    "Pão": "Padaria", "Biscoito Trakinas": "Padaria", "Biscoito Oreo": "Padaria", 
+    "Biscoito Club Social": "Padaria", "Papel higiênico": "Higiene", "Papel toalha": "Limpeza", 
+    "Detergente": "Limpeza", "Sabão em pó": "Limpeza", "Água sanitária": "Limpeza", 
+    "Desinfetante": "Limpeza", "Esponja de louça": "Limpeza", "Shampoo": "Higiene", 
+    "Condicionador": "Higiene", "Sabonete": "Higiene", "Creme dental": "Higiene"
 };
 
-// Banco de dados integrado Miller e Desco
+// 2. Banco de Dados: Promoções Miller (Vigentes até 17/06/2026)
 const promocoesMillerVigentes = {
     "ovos": { preco: 12.98, detalhe: "Ovos Primavis 20Un" },
     "arroz": { preco: 8.89, detalhe: "Arroz Rei Arthur 2Kg" },
     "frango": { preco: 10.79, detalhe: "Peito de Frango Kg" },
-    "carne moida": { preco: 16.89, detalhe: "Acém Moído 500g" },
     "carne moída": { preco: 16.89, detalhe: "Acém Moído 500g" },
     "farofa": { preco: 7.98, detalhe: "Farofa Yoki 400g" },
     "cerveja heineken": { preco: 9.49, detalhe: "Heineken 600ml" },
-    "sabao em po": { preco: 9.98, detalhe: "Brilhante 800g" },
-    "sabão em pó": { preco: 9.98, melt: "Brilhante 800g" },
+    "sabão em pó": { preco: 9.98, detalhe: "Brilhante 800g" },
     "linguiça": { preco: 15.69, detalhe: "Excelsior Churrasco 800g" }
 };
 
+// 3. Banco de Dados: Promoções Desco (Vigentes a partir de 16/06/2026)
 const promocoesDescoVigentes = {
+    "arroz": { preco: 12.90, detalhe: "Arroz T1 Líder 5Kg" },
+    "farinha de trigo": { preco: 14.95, detalhe: "Farinha Roseflor 5Kg" },
+    "cerveja heineken": { preco: 5.99, detalhe: "Heineken Long Neck 330ml" },
+    "água sanitária": { preco: 13.90, detalhe: "Água Sanitária Qboa 5L" },
+    "sabão em pó": { preco: 24.90, detalhe: "Omo 2,4Kg" },
+    "linguiça calabresa": { preco: 19.90, detalhe: "Linguiça Calabresa JCW 950g" },
+    "feijão": { preco: 4.49, detalhe: "Feijão Preto Itaúba 1Kg" },
     "amaciante girando sol": { preco: 19.47, detalhe: "Girando Sol Conc. 1.5L" },
     "lava roupas girando sol": { preco: 27.12, detalhe: "Lava Roupas Líq. 3L" },
     "biscoito trakinas": { preco: 2.69, detalhe: "Trakinas 126g" },
     "biscoito oreo": { preco: 3.49, detalhe: "Oreo Original 90g" },
-    "biscoito club social": { preco: 4.79, detalhe: "Club Social 141g/144g" }
+    "biscoito club social": { preco: 4.79, detalhe: "Club Social 141g" }
 };
-
 function obterCategoria(produto) {
     return mapaCategorias[produto] || "Outros";
 }
