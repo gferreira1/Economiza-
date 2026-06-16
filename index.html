@@ -1,548 +1,939 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Compras Inteligente</title>
-    <style>
-        :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --background: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-            --success: #10b981;
-            --danger: #ef4444;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Compras Inteligente</title>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
 
-        body {
-            background-color: var(--background);
-            color: var(--text);
-            padding-bottom: 80px;
-        }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 
-        header {
-            background-color: var(--primary);
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+<style>
+:root{
+    --azul:#2563eb;
+    --verde:#16a34a;
+    --vermelho:#dc2626;
+    --cinza:#64748b;
+    --fundo:#f8fafc;
+    --card:#ffffff;
+    --borda:#e2e8f0;
+}
 
-        .container {
-            padding: 1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
 
-        .tabs {
-            display: flex;
-            background: var(--card-bg);
-            padding: 0.25rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border: 1px solid var(--border);
-        }
+body{
+    background:var(--fundo);
+    color:#0f172a;
+}
 
-        .tab {
-            flex: 1;
-            padding: 0.75rem;
-            text-align: center;
-            background: none;
-            border: none;
-            font-weight: 600;
-            color: var(--text-light);
-            cursor: pointer;
-            border-radius: 6px;
-        }
+header{
+    background:var(--azul);
+    color:white;
+    padding:15px 20px;
+    text-align:center;
+}
 
-        .tab.active {
-            background: var(--primary);
-            color: white;
-        }
+header h1{
+    font-size: 20px;
+}
 
-        .tab-content {
-            display: none;
-        }
+.dashboard{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
 
-        .tab-content.active {
-            display: block;
-        }
+.cardResumo{
+    background:var(--card);
+    padding: 10px 5px;
+    border-radius:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,.04);
+    text-align: center;
+}
 
-        .card {
-            background: var(--card-bg);
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+.cardResumo span{
+    color:var(--cinza);
+    font-size: 11px;
+    display: block;
+    font-weight: 500;
+}
 
-        .form-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
+.cardResumo h2{
+    margin-top:2px;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-        input, select {
-            flex: 1;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 1rem;
-        }
+#qtdItens { color: var(--vermelho); }
+#qtdComprados { color: var(--azul); }
+#qtdTotalGeral { color: var(--verde); }
 
-        button {
-            padding: 0.75rem 1rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
+.menu{
+    display:flex;
+    justify-content: space-between;
+    gap:8px;
+    margin: 5px auto 15px auto;
+    padding: 0 12px;
+    max-width: 1200px;
+}
 
-        button:hover {
-            background: var(--primary-hover);
-        }
+.menu button{
+    flex: 1;
+    padding: 10px 5px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#e2e8f0;
+    color:#334155;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+}
 
-        .btn-danger { background: var(--danger); }
-        .btn-danger:hover { background: #b91c1c; }
-        .btn-success { background: var(--success); }
-        .btn-success:hover { background: #047857; }
+.menu button.ativo {
+    background: var(--azul);
+    color: white;
+}
 
-        .categoria-section {
-            margin-bottom: 1.5rem;
-        }
+@media (max-width: 600px) {
+    body { padding-bottom: 80px; }
+    .menu {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: #ffffff;
+        margin: 0; padding: 8px 10px;
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
+        z-index: 9999;
+        border-top: 1px solid var(--borda);
+    }
+    .menu button {
+        background: transparent; color: var(--cinza);
+        font-size: 10px; padding: 4px 0;
+    }
+    .menu button span { font-size: 18px; display: block; }
+    .menu button.ativo { background: transparent; color: var(--azul); }
+}
 
-        .categoria-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-light);
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.25rem;
-            border-bottom: 2px solid var(--border);
-        }
+/* Área do Scanner de Nota Fiscal */
+.container-scanner {
+    max-width: 1200px;
+    margin: 10px auto;
+    padding: 0 12px;
+}
+.btnScanner {
+    width: 100%;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+#reader {
+    width: 100%;
+    max-width: 400px;
+    margin: 10px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    border: none !important;
+}
 
-        .item-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem;
-            background: var(--card-bg);
-            border-radius: 6px;
-            margin-bottom: 0.5rem;
-            border: 1px solid var(--border);
-        }
+.secao-sugestoes {
+    padding: 0 12px;
+    margin-bottom: 15px;
+    max-width: 1200px;
+    margin: 0 auto 15px auto;
+}
+.secao-sugestoes p {
+    font-size: 11px;
+    color: var(--cinza);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.badges-favoritos {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+.badge-item {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+}
 
-        .item-row.comprado {
-            background: #f1f5f9;
-            opacity: 0.7;
-        }
+.filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 1200px;
+    margin: 10px auto 15px auto;
+    padding: 0 12px;
+}
 
-        .item-row.comprado .item-nome {
-            text-decoration: line-through;
-            color: var(--text-light);
-        }
+.linha-busca {
+    display: flex;
+    gap: 10px;
+}
 
-        .item-info {
-            display: flex;
-            flex-direction: column;
-        }
+.linha-busca input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    font-size: 14px;
+}
 
-        .item-nome {
-            font-weight: 600;
-        }
+.btnNovoProduto {
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--azul);
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+}
 
-        .item-detalhes {
-            font-size: 0.85rem;
-            color: var(--text-light);
-        }
+.btnVirarMes {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #fee2e2;
+    color: #991b1b;
+    cursor: pointer;
+    font-weight: 600;
+    width: 100%;
+}
 
-        .item-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
+.titulo-categoria {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    color: var(--cinza);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 15px 0 5px 0;
+    padding-left: 5px;
+    border-left: 3px solid var(--azul);
+}
 
-        .btn-action {
-            padding: 0.5rem;
-            font-size: 0.9rem;
-            border-radius: 4px;
-        }
+.container{
+    width:95%;
+    max-width:1200px;
+    margin:auto;
+    padding-bottom: 20px;
+}
 
-        #camera-container {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: black;
-            z-index: 1000;
-        }
+@media (min-width: 768px) {
+    .container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 12px;
+    }
+}
 
-        #video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+.item-card{
+    background:white;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
 
-        .camera-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 2rem;
-        }
+.item-card.comprado { opacity: 0.4; }
+.item-card.comprado h3 { text-decoration: line-through; color: var(--cinza); }
+.item-card h3 { font-size: 15px; cursor: pointer; }
 
-        .camera-box {
-            width: 250px;
-            height: 250px;
-            border: 4px solid var(--primary);
-            border-radius: 12px;
-            margin: auto;
-        }
+.tag-melhor-preco {
+    font-size: 11px;
+    color: var(--cinza);
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-block;
+    font-weight: 500;
+}
 
-        .footer-version {
-            text-align: center;
-            color: var(--text-light);
-            font-size: 0.8rem;
-            margin-top: 2rem;
-            padding: 1rem;
-        }
-    </style>
-    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+.btnAdicionar {
+    border: none; padding: 8px 12px; border-radius: 8px;
+    background: #dcfce7; color: #15803d; font-weight: 600; cursor: pointer;
+}
+.btnAdicionar.ja-adicionado { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+.detalhes-produto { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--borda); width: 100%; }
+.detalhes-produto.ativo { display: block; }
+.linha-inputs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.campo { display: flex; flex-direction: column; gap: 4px; }
+.campo label { font-size: 10px; color: var(--cinza); font-weight: 600; }
+.linha-inputs input, .linha-inputs select { padding: 6px; border: 1px solid var(--borda); border-radius: 6px; font-size: 12px; }
+
+.btnBuscarNfg {
+    background: #f8fafc;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+.btnBuscarNfg:hover { background: #f1f5f9; border-color: #94a3b8; }
+
+.btnToggleDetalhes { background: none; border: none; color: var(--azul); font-size: 11px; cursor: pointer; }
+.valor-total{ font-size:14px; font-weight:bold; color: var(--verde); }
+.topo-card { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.btnRemover { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px; }
+.flex-col { display: flex; flex-direction: column; width: 100%; align-items: flex-start; }
+.oculto{ display:none !important; }
+
+#paginaHistorico .card{ background:white; padding:15px; border-radius:12px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+#produtoHistorico { width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; margin-bottom: 12px; font-size: 15px; }
+
+.estatisticas{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+#paginaHistorico .card-estatistica { padding: 8px 4px; text-align: center; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+#paginaHistorico .card-estatistica span { font-size: 10px; color: var(--cinza); }
+#paginaHistorico .card-estatistica h2 { font-size: 13px; margin-top: 2px; }
+
+.secao-backup { max-width: 1200px; margin: 15px auto; display: flex; gap: 8px; justify-content: center; }
+.secao-backup button { background: transparent; border: 1px solid var(--borda); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: var(--cinza); cursor: pointer; }
+</style>
 </head>
+
 <body>
 
-    <header>
-        <h1>Minha Lista Inteligente</h1>
-    </header>
+<header>
+    <h1>🛒 Lista de Compras Inteligente</h1>
+</header>
 
-    <div class="container">
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('lista')">Minha Lista</button>
-            <button class="tab" onclick="switchTab('adicionar')">Adicionar</button>
-            <button class="tab" onclick="switchTab('scanner')">Escanear Cupom</button>
-        </div>
+<div class="dashboard">
+    <div class="cardResumo">
+        <span>Faltam</span>
+        <h2 id="qtdItens">0</h2>
+    </div>
+    <div class="cardResumo">
+        <span>Comprados</span>
+        <h2 id="qtdComprados">0</h2>
+    </div>
+    <div class="cardResumo">
+        <span>Total Itens</span>
+        <h2 id="qtdTotalGeral">0</h2>
+    </div>
+</div>
 
-        <div id="tab-lista" class="tab-content active">
-            <div id="lista-categorias"></div>
-            <button class="btn-danger" style="width: 100%; margin-top: 1rem;" onclick="limparLista()">Limpar Lista</button>
-        </div>
+<div class="menu">
+    <button id="btnAbaGabarito" class="ativo" onclick="mudarAba('gabarito')"><span>📋</span> Adicionar</button>
+    <button id="btnAbaCarrinho" onclick="mudarAba('carrinho')"><span>🛒</span> Lista Atual</button>
+    <button id="btnAbaHistorico" onclick="mudarAba('historico')"><span>📊</span> Preços</button>
+</div>
 
-        <div id="tab-adicionar" class="tab-content">
-            <div class="card">
-                <h3>Adicionar Item Manual</h3>
-                <div style="margin-top: 1rem;">
-                    <div class="form-group">
-                        <input type="text" id="manual-nome" placeholder="Ex: Arroz 5kg">
-                    </div>
-                    <div class="form-group">
-                        <select id="manual-categoria">
-                            <option value="Outros">Selecione uma Categoria (Opcional)</option>
-                            <option value="Bebidas">Bebidas</option>
-                            <option value="Hortifrúti">Hortifrúti</option>
-                            <option value="Padaria">Padaria</option>
-                            <option value="Matinais">Matinais</option>
-                            <option value="Limpeza">Limpeza</option>
-                            <option value="Açougue">Açougue</option>
-                            <option value="Mercearia">Mercearia</option>
-                            <option value="Outros">Outros</option>
-                        </select>
-                        <button onclick="adicionarManual()">Criar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div id="secaoScanner" class="container-scanner oculto">
+    <button class="btnScanner" id="btnIniciarCamera" onclick="alternarScanner()">
+        📷 Escanear QR Code da Nota Gaúcha
+    </button>
+    <div id="reader"></div>
+</div>
 
-        <div id="tab-scanner" class="tab-content">
-            <div class="card" style="text-align: center;">
-                <h3>Processar Cupom Fiscal</h3>
-                <p style="color: var(--text-light); margin: 0.5rem 0 1.5rem 0; font-size: 0.9rem;">
-                    Escaneie o QR Code ou cole a chave de acesso do cupom para atualizar preços e marcar como comprado.
-                </p>
-                <button onclick="iniciarCamera()" style="width: 100%; margin-bottom: 1rem;">📷 Abrir Câmera do Celular</button>
-                
-                <div style="margin: 1rem 0; color: var(--text-light);">— OU —</div>
-                
-                <div class="form-group">
-                    <input type="text" id="chave-acesso-input" placeholder="Digite os 44 dígitos da Chave de Acesso">
-                    <button class="btn-success" onclick="processarPorChave()">Processar</button>
-                </div>
-            </div>
-        </div>
+<div id="secaoSugestoes" class="secao-sugestoes">
+    <p>⭐ Mais Comprados Frequentemente:</p>
+    <div id="listaFavoritos" class="badges-favoritos"></div>
+</div>
 
-        <div class="footer-version">
-            <strong>Versão do App: 2.1.1</strong><br>
-            Ajuste de Inicialização de Câmera & Correção de Tela Preta.
-        </div>
+<div class="filtros">
+    <div class="linha-busca">
+        <input id="busca" type="text" placeholder="🔍 Buscar ou digitar novo..." onkeyup="carregar()">
+        <button class="btnNovoProduto" onclick="cadastrarNovoProdutoGeral()"> Criar</button>
+    </div>
+    <button id="btnVirarMes" class="btnVirarMes oculto" onclick="novoMes()"> Fechar Mês / Limpar Lista</button>
+</div>
+
+<div id="paginaGabarito" class="container"></div>
+<div id="paginaCarrinho" class="container oculto"></div>
+
+<div id="paginaHistorico" class="oculto container">
+    <div class="card" style="grid-column: 1 / -1;">
+        <label style="font-weight:600; display:block; margin-bottom:5px;">Histórico de Preços:</label>
+        <select id="produtoHistorico"></select>
+        <canvas id="grafico"></canvas>
     </div>
 
-    <div id="camera-container">
-        <video id="video"></video>
-        <div class="camera-overlay">
-            <button class="btn-danger btn-action" onclick="fecharCamerabox()" style="align-self: flex-end;">Fechar X</button>
-            <div class="camera-box"></div>
-            <p style="color: white; text-align: center; font-weight: 600;">Aproxime o QR Code do Cupom</p>
+    <div class="estatisticas" style="grid-column: 1 / -1;">
+        <div class="card-estatistica">
+            <span>Menor Preço</span>
+            <h2 id="menorPreco">R$ 0,00</h2>
+        </div>
+        <div class="card-estatistica">
+            <span>Maior Preço</span>
+            <h2 id="maiorPreco">R$ 0,00</h2>
+        </div>
+        <div class="card-estatistica">
+            <span>Último Preço</span>
+            <h2 id="ultimoPreco">R$ 0,00</h2>
         </div>
     </div>
+</div>
 
-    <script>
-        // Banco de dados local (Simulado)
-        let itensSalvos = JSON.parse(localStorage.getItem('lista_compras')) || [];
+<div class="secao-backup">
+    <button onclick="exportarDados()">💾 Exportar Backup</button>
+    <button onclick="importarDados()">📂 Importar Backup</button>
+</div>
 
-        // Dicionário inteligente para categorização automática (Itens do cupom inclusos)
-        const mapaCategorias = {
-            "refri sprite 2l zero": "Bebidas",
-            "refresco tang 18g ma": "Bebidas",
-            "refresco tang 18g ab": "Bebidas",
-            "aniversa rio n.6 ro": "Outros",
-            "aniversario n.2 ros": "Outros",
-            "repolho metade": "Hortifrúti",
-            "torta prestigio": "Padaria",
-            "leite luida dalia 1l": "Matinais",
-            "filtro papel bom jes": "Limpeza",
-            "cereal luar sul 200g": "Matinais",
-            "arroz": "Mercearia",
-            "feijao": "Mercearia",
-            "oleo": "Mercearia",
-            "detergente": "Limpeza",
-            "sabao": "Limpeza",
-            "pao": "Padaria",
-            "carne": "Açougue"
-        };
+<script>
+const mapaCategorias = {
+    "Água com gás": "Bebidas", "Água mineral": "Bebidas", "Refrigerante": "Bebidas", "Café": "Matinais", "Leite": "Matinais", "Erva-mate": "Matinais", "Achocolatado": "Matinais",
+    "Arroz": "Mercearia", "Feijão": "Mercearia", "Macarrão": "Mercearia", "Açúcar": "Mercearia", "Óleo": "Mercearia", "Sal": "Mercearia", "Farinha de trigo": "Mercearia", "Farofa": "Mercearia", "Vinagre": "Mercearia",
+    "Molho de tomate": "Mercearia", "Milho verde": "Enlatados", "Ervilha": "Enlatados", "Maionese": "Molhos", "Ketchup": "Molhos", "Mostarda": "Molhos",
+    "Carne bovina": "Açougue", "Frango": "Açougue", "Linguiça": "Açougue", "Queijo": "Frios e Laticínios", "Presunto": "Frios e Laticínios", "Ovos": "Frios e Laticínios",
+    "Batata": "Hortifrúti", "Batata palha": "Mercearia", "Cebola": "Hortifrúti", "Tomate": "Hortifrúti", "Cenoura": "Hortifrúti", "Alface": "Hortifrúti", "Alho": "Hortifrúti",
+    "Banana": "Hortifrúti", "Maçã": "Hortifrúti", "Laranja": "Hortifrúti", "Pão": "Padaria", "Bolacha/Biscoito": "Padaria", "Margarina": "Frios e Laticínios", "Chimia/Geleia": "Matinais",
+    "Papel higiênico": "Higiene", "Papel toalha": "Limpeza", "Detergente": "Limpeza", "Sabão em pó": "Limpeza", "Água sanitária": "Limpeza", "Desinfetante": "Limpeza", "Esponja de louça": "Limpeza",
+    "Shampoo": "Higiene", "Condicionador": "Higiene", "Sabonete": "Higiene", "Creme dental": "Higiene"
+};
 
-        let scannerInstancia = null;
+function obterCategoria(produto) {
+    return mapaCategorias[produto] || "Outros";
+}
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            if (event && event.target) {
-                event.target.classList.add('active');
+const itensPadrao = Object.keys(mapaCategorias);
+
+let gabaritoCustomizado = JSON.parse(localStorage.getItem("gabarito_custom")) || itensPadrao;
+let compras = JSON.parse(localStorage.getItem("compras_v3")) || [];
+let abaAtual = "gabarito";
+let grafico;
+let html5QrcodeScanner = null;
+
+const paginaGabarito = document.getElementById("paginaGabarito");
+const paginaCarrinho = document.getElementById("paginaCarrinho");
+const paginaHistorico = document.getElementById("paginaHistorico");
+const produtoHistorico = document.getElementById("produtoHistorico");
+
+function alternarScanner() {
+    const btn = document.getElementById("btnIniciarCamera");
+    
+    if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+        html5QrcodeScanner.stop().then(() => {
+            btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+            btn.style.background = "#4f46e5";
+        }).catch(err => console.log(err));
+        return;
+    }
+
+    btn.innerText = "🛑 Desligar Câmera";
+    btn.style.background = "#ef4444";
+
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5Qrcode("reader");
+    }
+
+    html5QrcodeScanner.start(
+        { facingMode: "environment" }, 
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (qrCodeMessage) => {
+            html5QrcodeScanner.stop().then(() => {
+                btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+                btn.style.background = "#4f46e5";
+                window.open(qrCodeMessage, '_blank');
+            }).catch(err => console.log(err));
+        },
+        (errorMessage) => { }
+    ).catch(err => {
+        alert("Aviso: A câmera precisa de uma conexão segura (HTTPS) ou servidor local (localhost) para rodar no celular.");
+        btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+        btn.style.background = "#4f46e5";
+    });
+}
+
+function buscarPrecoExterno(nomeProduto) {
+    const termoBusca = encodeURIComponent(nomeProduto);
+    const url = `https://www.google.com/search?tbm=shop&q=${termoBusca}`;
+    window.open(url, '_blank');
+}
+
+function obterMelhorOfertaHistorico(produto) {
+    let historicoValido = compras.filter(x => x.produto === produto && x.valor > 0 && x.comprado && x.mercado);
+    if(historicoValido.length === 0) return null;
+    let copiaHistorico = [...historicoValido];
+    copiaHistorico.sort((a, b) => a.valor - b.valor);
+    return { mercado: copiaHistorico[0].mercado, valor: copiaHistorico[0].valor };
+}
+
+function obterUltimoPrecoValido(produto) {
+    let historico = compras.filter(x => x.produto === produto && x.valor > 0 && x.comprado);
+    if(historico.length > 0) {
+        let copiaHistorico = [...historico];
+        copiaHistorico.sort((a,b) => new Date(b.data) - new Date(a.data));
+        return copiaHistorico[0].valor;
+    }
+    return 0;
+}
+
+function renderizarFavoritos() {
+    const boxSugestoes = document.getElementById("secaoSugestoes");
+    const divFavs = document.getElementById("listaFavoritos");
+    divFavs.innerHTML = "";
+    
+    let contagem = {};
+    compras.filter(x => x.comprado).forEach(x => {
+        contagem[x.produto] = (contagem[x.produto] || 0) + 1;
+    });
+    
+    let ordenados = Object.keys(contagem).filter(prod => contagem[prod] >= 2);
+    ordenados.sort((a,b) => contagem[b] - contagem[a]);
+    
+    if(ordenados.length === 0) {
+        boxSugestoes.style.display = "none";
+        return;
+    }
+
+    if(abaAtual === "gabarito") {
+        boxSugestoes.style.display = "block";
+    }
+
+    let exibidos = 0;
+    for (let i = 0; i < ordenados.length; i++) {
+        if (exibidos >= 7) break;
+        
+        let prod = ordenados[i];
+        const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
+        
+        if(!jaAdicionado) {
+            divFavs.innerHTML += `<div class="badge-item" onclick="adicionarAoCarrinho('${prod.replace(/'/g, "\\'")}')">➕ ${prod}</div>`;
+            exibidos++;
+        }
+    }
+
+    if (exibidos === 0) {
+        boxSugestoes.style.display = "none";
+    }
+}
+
+function carregar() {
+    const busca = document.getElementById("busca").value.toLowerCase();
+    
+    let pendentes = 0;
+    let comprados = 0;
+    let totalGeralItens = 0;
+
+    compras.forEach(item => {
+        if (!item.arquivado && item.noCarrinho) {
+            totalGeralItens++;
+            if (item.comprado) {
+                comprados++;
+            } else {
+                pendentes++;
             }
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            if(tabName !== 'scanner') fecharCamerabox();
+        }
+    });
+
+    document.getElementById("qtdItens").innerText = pendentes;
+    document.getElementById("qtdComprados").innerText = comprados;
+    document.getElementById("qtdTotalGeral").innerText = totalGeralItens;
+
+    // --- ABA ADICIONAR (GABARITO) ---
+    if (abaAtual === "gabarito") {
+        paginaGabarito.innerHTML = "";
+        let produtosFiltrados = [...new Set(gabaritoCustomizado)].sort((a, b) => a.localeCompare(b, 'pt', { sensitivity: 'base' }));
+        
+        let categoriesAtivas = {};
+        produtosFiltrados.forEach(prod => {
+            if (busca && !prod.toLowerCase().includes(busca)) return;
+            let cat = obterCategoria(prod);
+            if(!categoriesAtivas[cat]) categoriesAtivas[cat] = [];
+            categoriesAtivas[cat].push(prod);
+        });
+
+        Object.keys(categoriesAtivas).sort().forEach(cat => {
+            paginaGabarito.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
+            categoriesAtivas[cat].forEach(prod => {
+                const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
+                paginaGabarito.innerHTML += `
+                <div class="item-card">
+                    <h3>${prod}</h3>
+                    <button class="btnAdicionar ${jaAdicionado ? 'ja-adicionado' : ''}" 
+                            onclick="${jaAdicionado ? '' : `adicionarAoCarrinho('${prod.replace(/'/g, "\\'")}')`}">
+                        ${jaAdicionado ? '✔ Na Lista' : '➕ Adicionar'}
+                    </button>
+                </div>`;
+            });
+        });
+    }
+
+    // --- ABA LISTA ATUAL (CARRINHO) - COM RASTREIO DA OFERTA PUBLICADA NO MILLER ---
+    if (abaAtual === "carrinho") {
+        document.getElementById("secaoSugestoes").style.display = "none";
+        paginaCarrinho.innerHTML = "";
+        let itensAtivos = compras.filter(x => x.noCarrinho && !x.arquivado);
+
+        if(itensAtivos.length === 0) {
+            paginaCarrinho.innerHTML = `<p style="text-align:center; color:var(--cinza); padding:30px; grid-column: 1 / -1;">Sua lista atual está vazia.</p>`;
         }
 
-        function renderizarLista() {
-            const container = document.getElementById('lista-categorias');
-            container.innerHTML = '';
+        let categoriesCarrinho = {};
+        itensAtivos.forEach(item => {
+            if (busca && !item.produto.toLowerCase().includes(busca)) return;
+            let cat = obterCategoria(item.produto);
+            if(!categoriesCarrinho[cat]) categoriesCarrinho[cat] = [];
+            categoriesCarrinho[cat].push(item);
+        });
 
-            if (itensSalvos.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:var(--text-light); padding:2rem;">Sua lista está vazia!</p>';
-                return;
-            }
-
-            const categorias = {};
-            itensSalvos.forEach(item => {
-                if (!categorias[item.categoria]) categorias[item.categoria] = [];
-                categorias[item.categoria].push(item);
-            });
-
-            for (let cat in categorias) {
-                const section = document.createElement('div');
-                section.className = 'categoria-section';
+        Object.keys(categoriesCarrinho).sort().forEach(cat => {
+            paginaCarrinho.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
+            categoriesCarrinho[cat].forEach(item => {
+                const indexReal = compras.findIndex(x => x.id === item.id);
+                let preçoSugerido = item.valor || obterUltimoPrecoValido(item.produto);
+                let melhorOferta = obterMelhorOfertaHistorico(item.produto);
+                let textoHistorico = melhorOferta ? `<span class="tag-melhor-preco">🏷 Seu Histórico: R$ ${melhorOferta.valor.toFixed(2)} no ${melhorOferta.mercado}</span>` : '';
                 
-                let html = `<div class="categoria-title">${cat}</div>`;
-                
-                categorias[cat].forEach(item => {
-                    html += `
-                        <div class="item-row ${item.comprado ? 'comprado' : ''}">
-                            <div class="item-info">
-                                <span class="item-nome">${item.nome}</span>
-                                <span class="item-detalhes">${item.preco ? 'R$ ' + item.preco.toFixed(2) : 'Sem preço'}</span>
+                let idCard = `card-item-${item.id}`;
+                let idTexto = `texto-oferta-${item.id}`;
+
+                paginaCarrinho.innerHTML += `
+                <div id="${idCard}" class="item-card ${item.comprado ? 'comprado' : ''}">
+                    <div class="flex-col">
+                        <div class="topo-card">
+                            <div>
+                                <h3 onclick="toggleDetalhesCard(${item.id})">${item.produto}</h3>
+                                <div id="${idTexto}" style="font-size:11px; color:var(--cinza); margin-top:3px;">🔍 Verificando encarte do Miller...</div>
+                                ${textoHistorico}
                             </div>
-                            <div class="item-actions">
-                                <button class="btn-success btn-action" onclick="alternarStatus('${item.id}')">${item.comprado ? '✓' : 'Ok'}</button>
-                                <button class="btn-danger btn-action" onclick="removerItem('${item.id}')">X</button>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <button class="btnToggleDetalhes" onclick="toggleDetalhesCard(${item.id})">⚙ Config</button>
+                                <button class="btnRemover" onclick="removerDoCarrinho(${indexReal})">✕</button>
                             </div>
                         </div>
-                    `;
-                });
-                
-                section.innerHTML = html;
-                container.appendChild(section);
-            }
-        }
+                        
+                        <div id="detalhes-${item.id}" class="detalhes-produto">
+                            <div>
+                                <button class="btnBuscarNfg" onclick="buscarPrecoExterno('${item.produto.replace(/'/g, "\\'")}')">
+                                    🔍 Pesquisar Ofertas na Internet
+                                </button>
+                            </div>
+                            
+                            <div class="linha-inputs">
+                                <div class="campo">
+                                    <label>Status</label>
+                                    <select id="statusSelect-${item.id}" onchange="alterarStatus(${indexReal}, this.value, ${item.id})">
+                                        <option value="false" ${!item.comprado ? 'selected' : ''}>⚠ Falta</option>
+                                        <option value="true" ${item.comprado ? 'selected' : ''}>✔ Ok</option>
+                                    </select>
+                                </div>
+                                <div class="campo">
+                                    <label>Qtd</label>
+                                    <input type="number" style="width:50px;" min="1" value="${item.quantidade || 1}" onchange="alterarQuantidade(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo">
+                                    <label>Preço Unit.</label>
+                                    <input type="number" style="width:70px;" step="0.01" placeholder="${preçoSugerido ? preçoSugerido.toFixed(2) : '0,00'}" value="${item.valor || ''}" onchange="alterarValor(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo">
+                                    <label>Mercado</label>
+                                    <input type="text" style="width:100px;" placeholder="Ex: Atacadão" value="${item.mercado || ''}" onchange="alterarMercado(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo">
+                                    <label>Data</label>
+                                    <input type="date" style="width:110px;" value="${item.data || ''}" onchange="alterarData(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo" style="margin-left:auto; text-align:right;">
+                                    <label>Subtotal</label>
+                                    <div class="valor-total">R$ ${((item.valor || 0) * (item.quantidade || 1)).toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
 
-        function descobrirCategoria(nome) {
-            const nomeMinusculo = nome.toLowerCase();
-            for (let chave in mapaCategorias) {
-                if (nomeMinusculo.includes(chave)) {
-                    return mapaCategorias[chave];
+                // Dispara a requisição em tempo real para o seu Backend de Raspagem do Miller
+                if (!item.comprado) {
+                    fetch(`http://localhost:3000/buscar-ofertas-miller?produto=${encodeURIComponent(item.produto)}`)
+                    .then(res => res.json())
+                    .then(dados => {
+                        const cardElem = document.getElementById(idCard);
+                        const textoElem = document.getElementById(idTexto);
+
+                        if (dados.ofertaAtiva) {
+                            // FICA VERDE E DESTACA A OFERTA PUBLICADA
+                            cardElem.style.border = "2px solid var(--verde)";
+                            cardElem.style.background = "#f0fdf4";
+                            
+                            if (dados.verificar) {
+                                textoElem.innerHTML = `<span style="color: var(--verde); font-weight: 700;">📢 Item listado no encarte atual do Super Miller! (Toque para abrir)</span>`;
+                                cardElem.style.cursor = "pointer";
+                                cardElem.onclick = () => window.open("https://www.supermiller.com.br/ofertas.html", "_blank");
+                            } else {
+                                textoElem.innerHTML = `<span style="color: var(--verde); font-weight: 700;">📢 No Super Miller esta com oferta por R$ ${dados.valor.toFixed(2)}!</span>`;
+                            }
+                        } else {
+                            textoElem.innerHTML = `<span style="color: var(--cinza); font-size: 11px;">Não encontrado no encarte do Miller esta semana.</span>`;
+                        }
+                    })
+                    .catch(() => {
+                        document.getElementById(idTexto).innerHTML = `<span style="color: var(--cinza); font-size: 11px;">Aviso: Servidor de ofertas offline.</span>`;
+                    });
+                } else {
+                    document.getElementById(idTexto).innerHTML = "";
                 }
-            }
-            return "Outros";
-        }
-
-        function adicionarManual() {
-            const nomeInput = document.getElementById('manual-nome');
-            const catSelect = document.getElementById('manual-categoria');
-
-            if (!nomeInput.value.trim()) return alert("Digite o nome do item!");
-
-            let categoriaFinal = catSelect.value === "Outros" ? descobrirCategoria(nomeInput.value) : catSelect.value;
-
-            const novoItem = {
-                id: Date.now().toString(),
-                nome: nomeInput.value.trim(),
-                categoria: categoriaFinal,
-                preco: null,
-                comprado: false
-            };
-
-            itensSalvos.push(novoItem);
-            salvarDados();
-            nomeInput.value = '';
-            catSelect.value = 'Outros';
-            switchTab('lista');
-        }
-
-        function alternarStatus(id) {
-            itensSalvos = itensSalvos.map(item => item.id === id ? {...item, comprado: !item.comprado} : item);
-            salvarDados();
-        }
-
-        function removerItem(id) {
-            itensSalvos = itensSalvos.filter(item => item.id !== id);
-            salvarDados();
-        }
-
-        function limparLista() {
-            if(confirm("Tem certeza que deseja apagar toda a lista?")) {
-                itensSalvos = [];
-                salvarDados();
-            }
-        }
-
-        function salvarDados() {
-            localStorage.setItem('lista_compras', JSON.stringify(itensSalvos));
-            renderizarLista();
-        }
-
-        // ================= FUNÇÃO DA CÂMERA AJUSTADA (CORREÇÃO TELA PRETA) =================
-
-        function iniciarCamera() {
-            document.getElementById('camera-container').style.display = 'block';
-            
-            scannerInstancia = new Instascan.Scanner({ video: document.getElementById('video'), mirror: false });
-
-            scannerInstancia.addListener('scan', function (content) {
-                fecharCamerabox();
-                processarDadosQrCode(content);
             });
+        });
+    }
 
-            // Configuração moderna para forçar o hardware da câmera traseira externa
-            const restricoes = {
-                video: { facingMode: "environment" },
-                audio: false
-            };
+    renderizarFavoritos();
+    carregarFiltroProdutosGrafico();
+}
 
-            // Solicita permissão ativa nativa ao navegador antes de rodar a biblioteca
-            navigator.mediaDevices.getUserMedia(restricoes)
-            .then(function(stream) {
-                Instascan.Camera.getCameras().then(function (cameras) {
-                    if (cameras.length > 0) {
-                        // Varre a lista de lentes disponíveis no celular procurando a de trás
-                        let camaraTraseira = cameras.find(c => c.name.toLowerCase().includes('back') || c.name.toLowerCase().includes('traseira')) || cameras[cameras.length - 1];
-                        scannerInstancia.start(camaraTraseira);
-                    } else {
-                        alert('Nenhuma câmera de vídeo foi detectada no dispositivo.');
-                        fecharCamerabox();
-                    }
-                });
-            })
-            .catch(function (e) {
-                console.warn("Falha ao forçar a câmera em modo estrito, tentando inicialização padrão...", e);
-                
-                // Segunda tentativa de contingência genérica para navegadores antigos ou computadores
-                Instascan.Camera.getCameras().then(function (cameras) {
-                    if (cameras.length > 0) {
-                        scannerInstancia.start(cameras[0]);
-                    } else {
-                        alert('Erro ao acessar a câmera. Certifique-se de que o site possui permissão de mídia nas configurações do seu navegador.');
-                        fecharCamerabox();
-                    }
-                }).catch(function(err) {
-                    alert('Erro crítico de hardware ou falta de ambiente HTTPS seguro: ' + err);
-                    fecharCamerabox();
-                });
-            });
+function toggleDetalhesCard(id) {
+    const elem = document.getElementById(`detalhes-${id}`);
+    if(elem) elem.classList.toggle("ativo");
+}
+
+function cadastrarNovoProdutoGeral() {
+    const inputBusca = document.getElementById("busca");
+    const nomeNovo = inputBusca.value.trim();
+    if (!nomeNovo) return;
+
+    const existe = gabaritoCustomizado.some(x => x.toLowerCase() === nomeNovo.toLowerCase());
+    if (!existe) {
+        gabaritoCustomizado.push(nomeNovo);
+        localStorage.setItem("gabarito_custom", JSON.stringify(gabaritoCustomizado));
+    }
+    adicionarAoCarrinho(nomeNovo);
+    inputBusca.value = "";
+    carregar();
+}
+
+function adicionarAoCarrinho(nomeProduto) {
+    compras.push({
+        id: Date.now() + Math.random(),
+        produto: nomeProduto,
+        quantidade: 1,
+        valor: 0,
+        mercado: "",
+        data: new Date().toISOString().split('T')[0],
+        comprado: false,
+        noCarrinho: true,
+        arquivado: false
+    });
+    salvar();
+}
+
+function removerDoCarrinho(index) {
+    if(compras[index].valor === 0) {
+        compras.splice(index, 1);
+    } else {
+        compras[index].noCarrinho = false;
+    }
+    salvar();
+}
+
+function mudarAba(aba) {
+    abaAtual = aba;
+    document.getElementById("btnAbaGabarito").classList.remove("ativo");
+    document.getElementById("btnAbaCarrinho").classList.remove("ativo");
+    document.getElementById("btnAbaHistorico").classList.remove("ativo");
+    document.getElementById("btnVirarMes").classList.add("oculto");
+    document.getElementById("secaoScanner").classList.add("oculto");
+
+    paginaGabarito.classList.add("oculto");
+    paginaCarrinho.classList.add("oculto");
+    paginaHistorico.classList.add("oculto");
+
+    if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+        html5QrcodeScanner.stop().then(() => {
+            const btn = document.getElementById("btnIniciarCamera");
+            btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+            btn.style.background = "#4f46e5";
+        }).catch(err => console.log(err));
+    }
+
+    if (aba === "gabarito") {
+        document.getElementById("btnAbaGabarito").classList.add("ativo");
+        paginaGabarito.classList.remove("oculto");
+    } else if (aba === "carrinho") {
+        document.getElementById("btnAbaCarrinho").classList.add("ativo");
+        paginaCarrinho.classList.remove("oculto");
+        document.getElementById("btnVirarMes").classList.remove("oculto");
+        document.getElementById("secaoScanner").classList.remove("oculto"); 
+    } else if (aba === "historico") {
+        document.getElementById("btnAbaHistorico").classList.add("ativo");
+        paginaHistorico.classList.remove("oculto");
+        atualizarGrafico();
+    }
+    carregar();
+}
+
+function alterarStatus(index, val, idElemento) { 
+    if (val === "true" && (!compras[index].valor || compras[index].valor <= 0)) {
+        alert(`Digite o preço de "${compras[index].produto}" antes de marcar como comprado.`);
+        const select = document.getElementById(`statusSelect-${idElemento}`);
+        if(select) select.value = "false";
+        const detalhes = document.getElementById(`detalhes-${idElemento}`);
+        if(detalhes) detalhes.classList.add("ativo");
+        return;
+    }
+    compras[index].comprado = (val === "true"); 
+    salvar(); 
+}
+
+function alterarQuantidade(index, val) { compras[index].quantidade = Number(val) || 1; salvar(); }
+function alterarValor(index, val) { compras[index].valor = Number(val) || 0; salvar(); }
+function alterarData(index, val) { compras[index].data = val; salvar(); }
+function alterarMercado(index, val) { compras[index].mercado = val; salvar(); }
+
+function salvar() {
+    localStorage.setItem("compras_v3", JSON.stringify(compras));
+    carregar();
+}
+
+function carregarFiltroProdutosGrafico(){
+    let UrbanPr = [...new Set(compras.filter(x => x.valor > 0).map(x => x.produto))].sort();
+    let anterior = produtoHistorico.value;
+    produtoHistorico.innerHTML = "";
+    if(UrbanPr.length === 0) {
+        produtoHistorico.innerHTML = "<option>Nenhum histórico disponível</option>";
+        return;
+    }
+    UrbanPr.forEach(prod => {
+        produtoHistorico.innerHTML += `<option value="${prod}">${prod}</option>`;
+    });
+    if(anterior && UrbanPr.includes(anterior)) {
+        produtoHistorico.value = anterior;
+    }
+}
+
+produtoHistorico.addEventListener("change", atualizarGrafico);
+
+function atualizarGrafico(){
+    let prod = produtoHistorico.value;
+    let dados = compras.filter(x => x.produto === prod && x.valor > 0 && x.data).sort((a,b) => new Date(a.data) - new Date(b.data));
+
+    if(dados.length === 0) {
+        document.getElementById("menorPreco").innerText = "R$ 0,00";
+        document.getElementById("maiorPreco").innerText = "R$ 0,00";
+        document.getElementById("ultimoPreco").innerText = "R$ 0,00";
+        if(grafico) grafico.destroy();
+        return;
+    }
+
+    let labels = dados.map(x => {
+        let p = x.data.split('-');
+        let dataFormatada = p.length === 3 ? `${p[2]}/${p[1]}` : x.data;
+        return x.mercado ? `${dataFormatada} (${x.mercado})` : dataFormatada;
+    });
+    let valores = dados.map(x => x.valor);
+
+    if(grafico) grafico.destroy();
+
+    grafico = new Chart(document.getElementById("grafico"), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Preço por Mercado',
+                data: valores,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                fill: true,
+                tension: 0.1
+            }]
         }
+    });
 
-        function fecharCamerabox() {
-            if (scannerInstancia) {
-                scannerInstancia.stop();
+    let menorItem = [...dados].sort((a,b) => a.valor - b.valor)[0];
+    let maiorItem = [...dados].sort((a,b) => b.valor - a.valor)[0];
+    let ultimoItem = dados[dados.length - 1];
+
+    document.getElementById("menorPreco").innerText = `R$ ${menorItem.valor.toFixed(2)} (${menorItem.mercado || '?'})`;
+    document.getElementById("maiorPreco").innerText = `R$ ${maiorItem.maiorItem || maiorItem.valor.toFixed(2)} (${maiorItem.mercado || '?'})`;
+    document.getElementById("ultimoPreco").innerText = `R$ ${ultimoItem.valor.toFixed(2)} (${ultimoItem.mercado || '?'})`;
+}
+
+function novoMes(){
+    if(!confirm("Deseja encerrar e limpar a lista ativa atual? Os preços continuarão salvos nos gráficos.")) return;
+    compras.forEach(item => {
+        if(item.noCarrinho && !item.arquivado) {
+            if(item.comprado && item.valor > 0) {
+                item.arquivado = true;
+            } else {
+                item.noCarrinho = false;
             }
-            document.getElementById('camera-container').style.display = 'none';
         }
+    });
+    salvar();
+    mudarAba("gabarito");
+}
 
-        function processarPorChave() {
-            const txt = document.getElementById('chave-acesso-input').value.replace(/\s/g, '');
-            if(txt.length < 44) return alert("A chave de acesso precisa ter exatamente 44 números.");
-            processarDadosQrCode("https://www.sefaz.rs.gov.br/NFCE/NFCE-COM.aspx?p=" + txt);
-        }
+function exportarDados() {
+    const dados = { gabarito: gabaritoCustomizado, compras: compras };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dados));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `backup_compras.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+}
 
-        function processarDadosQrCode(urlDados) {
-            alert("Buscando dados do cupom na SEFAZ...");
-
-            fetch(`https://api.nfeio.com/v1/nfe/qrcode?url=${encodeURIComponent(urlDados)}`)
-            .then(res => res.json())
-            .then(dadosFiscais => {
-                if(!dadosFiscais.items || dadosFiscais.items.length === 0) {
-                    throw new Error("Produtos não localizados na nota fiscal.");
+function importarDados() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.readAsText(file,'UTF-8');
+        reader.onload = readerEvent => {
+            try {
+                const dadosImportados = JSON.parse(readerEvent.target.result);
+                if(dadosImportados.compras) {
+                    gabaritoCustomizado = dadosImportados.gabarito || itensPadrao;
+                    compras = dadosImportados.compras;
+                    localStorage.setItem("gabarito_custom", JSON.stringify(gabaritoCustomizado));
+                    localStorage.setItem("compras_v3", JSON.stringify(compras));
+                    carregar();
+                    alert("Backup restaurado!");
                 }
-
-                dadosFiscais.items.forEach(prod => {
-                    let catDescoberta = descobrirCategoria(prod.description);
-                    let itemExistente = itensSalvos.find(i => i.nome.toLowerCase() === prod.description.toLowerCase());
-
-                    if(itemExistente) {
-                        itemExistente.preco = parseFloat(prod.unitValue);
-                        itemExistente.comprado = true;
-                    } else {
-                        itensSalvos.push({
-                            id: Date.now().toString() + Math.random(),
-                            nome: prod.description,
-                            categoria: catDescoberta,
-                            preco: parseFloat(prod.unitValue),
-                            comprado: true
-                        });
-                    }
-                });
-
-                salvarDados();
-                alert("Sua lista foi atualizada com sucesso utilizando os dados do cupom!");
-                switchTab('lista');
-            })
-            .catch(erro => {
-                console.error(erro);
-                alert("Não conseguimos extrair os dados. A nota é muito nova ou o servidor nacional está instável.");
-            });
+            } catch(err) { alert("Erro ao importar."); }
         }
+    }
+    input.click();
+}
 
-        // Inicialização do App
-        renderizarLista();
-    </script>
+// Inicialização correta
+carregar();
+carregarFiltroProdutosGrafico();
+</script>
+
 </body>
 </html>
