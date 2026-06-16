@@ -1,69 +1,934 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Compras Inteligente</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root { --azul:#2563eb; --verde:#16a34a; --vermelho:#dc2626; --amarelo:#facc15; --cinza:#64748b; --fundo:#f8fafc; --card:#ffffff; }
-        body { font-family: 'Inter', sans-serif; background: var(--fundo); margin: 0; padding-bottom: 80px; }
-        header { background: var(--azul); color: white; padding: 15px; text-align: center; }
-        .container { max-width: 600px; margin: auto; padding: 10px; }
-        .item-card { background: var(--card); padding: 12px; margin-bottom: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .btn-tag { border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 11px; margin-top: 5px; }
-        .miller { background: var(--azul); color: white; }
-        .desco { background: var(--vermelho); color: var(--amarelo); border: 1px solid var(--amarelo); }
-        .btn-add { background: #dcfce7; color: var(--verde); border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Compras Inteligente</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+
+<style>
+:root{
+    --azul:#2563eb;
+    --verde:#16a34a;
+    --vermelho:#dc2626;
+    --cinza:#64748b;
+    --fundo:#f8fafc;
+    --card:#ffffff;
+    --borda:#e2e8f0;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+    background:var(--fundo);
+    color:#0f172a;
+}
+
+header{
+    background:var(--azul);
+    color:white;
+    padding:15px 20px;
+    text-align:center;
+}
+
+header h1{
+    font-size: 20px;
+}
+
+.dashboard{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.cardResumo{
+    background:var(--card);
+    padding: 10px 5px;
+    border-radius:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,.04);
+    text-align: center;
+}
+
+.cardResumo span{
+    color:var(--cinza);
+    font-size: 11px;
+    display: block;
+    font-weight: 500;
+}
+
+.cardResumo h2{
+    margin-top:2px;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#qtdItens { color: var(--vermelho); }
+#qtdComprados { color: var(--azul); }
+#qtdTotalGeral { color: var(--verde); }
+
+.menu{
+    display:flex;
+    justify-content: space-between;
+    gap:8px;
+    margin: 5px auto 15px auto;
+    padding: 0 12px;
+    max-width: 1200px;
+}
+
+.menu button{
+    flex: 1;
+    padding: 10px 5px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#e2e8f0;
+    color:#334155;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+}
+
+.menu button.ativo {
+    background: var(--azul);
+    color: white;
+}
+
+@media (max-width: 600px) {
+    body { padding-bottom: 80px; }
+    .menu {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: #ffffff;
+        margin: 0; padding: 8px 10px;
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
+        z-index: 9999;
+        border-top: 1px solid var(--borda);
+    }
+    .menu button {
+        background: transparent; color: var(--cinza);
+        font-size: 10px; padding: 4px 0;
+    }
+    .menu button span { font-size: 18px; display: block; }
+    .menu button.ativo { background: transparent; color: var(--azul); }
+}
+
+.container-scanner {
+    max-width: 1200px;
+    margin: 10px auto;
+    padding: 0 12px;
+}
+.btnScanner {
+    width: 100%;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+#reader {
+    width: 100%;
+    max-width: 400px;
+    margin: 10px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    border: none !important;
+}
+
+.secao-sugestoes {
+    padding: 0 12px;
+    margin-bottom: 15px;
+    max-width: 1200px;
+    margin: 0 auto 15px auto;
+}
+.secao-sugestoes p {
+    font-size: 11px;
+    color: var(--cinza);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.badges-favoritos {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+.badge-item {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 1200px;
+    margin: 10px auto 15px auto;
+    padding: 0 12px;
+}
+
+.linha-busca {
+    display: flex;
+    gap: 10px;
+}
+
+.linha-busca input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.btnNovoProduto {
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--azul);
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.btnVirarMes {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #fee2e2;
+    color: #991b1b;
+    cursor: pointer;
+    font-weight: 600;
+    width: 100%;
+}
+
+.titulo-categoria {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    color: var(--cinza);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 15px 0 5px 0;
+    padding-left: 5px;
+    border-left: 3px solid var(--azul);
+}
+
+.container{
+    width:95%;
+    max-width:1200px;
+    margin:auto;
+    padding-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+    .container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 12px;
+    }
+}
+
+.item-card{
+    background:white;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-card.comprado { opacity: 0.4; }
+.item-card.comprado h3 { text-decoration: line-through; color: var(--cinza); }
+.item-card h3 { font-size: 15px; cursor: pointer; }
+
+.tag-melhor-preco {
+    font-size: 11px;
+    color: var(--verde);
+    background: #e6f4ea;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-block;
+    font-weight: 600;
+}
+
+/* Estilo solicitado: Miller Azul */
+.tag-promocao-miller {
+    font-size: 11px;
+    color: white;
+    background: #1e40af;
+    border: 1px solid #1d4ed8;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Estilo solicitado: Desco Vermelho com Amarelo */
+.tag-promocao-desco {
+    font-size: 11px;
+    color: #fef08a;
+    background: #dc2626;
+    border: 1px solid #facc15;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btnAdicionar {
+    border: none; padding: 8px 12px; border-radius: 8px;
+    background: #dcfce7; color: #15803d; font-weight: 600; cursor: pointer;
+}
+.btnAdicionar.ja-adicionado { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+.detalhes-produto { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--borda); }
+.detalhes-produto.ativo { display: block; }
+.linha-inputs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.campo { display: flex; flex-direction: column; gap: 4px; }
+.campo label { font-size: 10px; color: var(--cinza); font-weight: 600; }
+.linha-inputs input, .linha-inputs select { padding: 6px; border: 1px solid var(--borda); border-radius: 6px; font-size: 12px; }
+
+.btnBuscarNfg {
+    background: #f8fafc;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+.btnBuscarNfg:hover { background: #f1f5f9; border-color: #94a3b8; }
+
+.btnToggleDetalhes { background: none; border: none; color: var(--azul); font-size: 11px; cursor: pointer; }
+.valor-total{ font-size:14px; font-weight:bold; color: var(--verde); }
+.topo-card { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.btnRemover { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px; }
+.flex-col { display: flex; flex-direction: column; width: 100%; align-items: flex-start; }
+.oculto{ display:none !important; }
+
+#paginaHistorico .card{ background:white; padding:15px; border-radius:12px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+#produtoHistorico { width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; margin-bottom: 12px; font-size: 15px; }
+
+.estatisticas{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+#paginaHistorico .card-estatistica { padding: 8px 4px; text-align: center; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+#paginaHistorico .card-estatistica span { font-size: 10px; color: var(--cinza); }
+#paginaHistorico .card-estatistica h2 { font-size: 13px; margin-top: 2px; }
+
+.secao-backup { max-width: 1200px; margin: 15px auto; display: flex; gap: 8px; justify-content: center; }
+.secao-backup button { background: transparent; border: 1px solid var(--borda); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: var(--cinza); cursor: pointer; }
+</style>
 </head>
+
 <body>
 
-<header><h1>🛒 Lista de Compras</h1></header>
+<header>
+    <h1>🛒 Lista de Compras Inteligente</h1>
+</header>
 
-<div class="container" id="listaProdutos">
+<div class="dashboard">
+    <div class="cardResumo">
+        <span>Faltam</span>
+        <h2 id="qtdItens">0</h2>
+    </div>
+    <div class="cardResumo">
+        <span>Comprados</span>
+        <h2 id="qtdComprados">0</h2>
+    </div>
+    <div class="cardResumo">
+        <span>Total Itens</span>
+        <h2 id="qtdTotalGeral">0</h2>
+    </div>
+</div>
+
+<div class="menu">
+    <button id="btnAbaGabarito" class="ativo" onclick="mudarAba('gabarito')"><span>📋</span> Adicionar</button>
+    <button id="btnAbaCarrinho" onclick="mudarAba('carrinho')"><span>🛒</span> Lista Atual</button>
+    <button id="btnAbaHistorico" onclick="mudarAba('historico')"><span>📊</span> Preços</button>
+</div>
+
+<div id="secaoScanner" class="container-scanner oculto">
+    <button class="btnScanner" id="btnIniciarCamera" onclick="alternarScanner()">
+        📷 Escanear QR Code da Nota Gaúcha
+    </button>
+    <div id="reader"></div>
+</div>
+
+<div id="secaoSugestoes" class="secao-sugestoes">
+    <p>⭐ Patrocinados & Mais Comprados:</p>
+    <div id="listaFavoritos" class="badges-favoritos"></div>
+</div>
+
+<div class="filtros">
+    <div class="linha-busca">
+        <input id="busca" type="text" placeholder="🔍 Buscar ou digitar novo..." onkeyup="carregar()">
+        <button class="btnNovoProduto" onclick="cadastrarNovoProdutoGeral()"> Criar</button>
+    </div>
+    <button id="btnVirarMes" class="btnVirarMes oculto" onclick="novoMes()"> Fechar Mês / Limpar Lista</button>
+</div>
+
+<div id="paginaGabarito" class="container"></div>
+<div id="paginaCarrinho" class="container oculto"></div>
+
+<div id="paginaHistorico" class="oculto container">
+    <div class="card" style="grid-column: 1 / -1;">
+        <label style="font-weight:600; display:block; margin-bottom:5px;">Histórico de Preços:</label>
+        <select id="produtoHistorico"></select>
+        <canvas id="grafico"></canvas>
     </div>
 
+    <div class="estatisticas" style="grid-column: 1 / -1;">
+        <div class="card-estatistica">
+            <span>Menor Preço</span>
+            <h2 id="menorPreco">R$ 0,00</h2>
+        </div>
+        <div class="card-estatistica">
+            <span>Maior Preço</span>
+            <h2 id="maiorPreco">R$ 0,00</h2>
+        </div>
+        <div class="card-estatistica">
+            <span>Último Preço</span>
+            <h2 id="ultimoPreco">R$ 0,00</h2>
+        </div>
+    </div>
+</div>
+
+<div class="secao-backup">
+    <button onclick="exportarDados()">💾 Exportar Backup</button>
+    <button onclick="importarDados()">📂 Importar Backup</button>
+</div>
+
 <script>
-    // Banco de Dados das Promoções
-    const promos = {
-        "amaciante": { preco: 19.47, mercado: "Desco", classe: "desco" },
-        "lava roupas": { preco: 27.12, mercado: "Desco", classe: "desco" },
-        "trakinas": { preco: 2.69, mercado: "Desco", classe: "desco" },
-        "oreo": { preco: 3.49, mercado: "Desco", classe: "desco" },
-        "club social": { preco: 4.79, mercado: "Desco", classe: "desco" },
-        "creme de avelã": { preco: 15.90, mercado: "Miller", classe: "miller" }
-    };
+const mapaCategorias = {
+    "Água com gás": "Bebidas", "Água mineral": "Bebidas", "Refrigerante": "Bebidas", "Café": "Matinais", "Leite": "Matinais", "Erva-mate": "Matinais", "Achocolatado": "Matinais", "Creme de avelã": "Matinais",
+    "Arroz": "Mercearia", "Feijão": "Mercearia", "Macarrão": "Mercearia", "Açúcar": "Mercearia", "Óleo": "Mercearia", "Sal": "Mercearia", "Farinha de trigo": "Mercearia", "Farofa": "Mercearia", "Vinagre": "Mercearia",
+    "Molho de tomate": "Mercearia", "Milho verde": "Enlatados", "Ervilha": "Enlatados", "Maionese": "Molhos", "Ketchup": "Molhos", "Mostarda": "Molhos",
+    "Carne bovina": "Açougue", "Carne Moída": "Açougue", "Frango": "Açougue", "Linguiça": "Açougue", "Queijo": "Frios e Laticínios", "Presunto": "Frios e Laticínios", "Ovos": "Frios e Laticínios",
+    "Batata": "Hortifrúti", "Batata palha": "Mercearia", "Cebola": "Hortifrúti", "Tomate": "Hortifrúti", "Cenoura": "Hortifrúti", "Alface": "Hortifrúti", "Alho": "Hortifrúti",
+    "Banana": "Hortifrúti", "Maçã": "Hortifrúti", "Laranja": "Hortifrúti", "Pão": "Padaria", "Biscoito Trakinas": "Padaria", "Biscoito Oreo": "Padaria", "Biscoito Club Social": "Padaria", "Margarina": "Frios e Laticínios", "Chimia/Geleia": "Matinais",
+    "Papel higiênico": "Higiene", "Papel toalha": "Limpeza", "Amaciante Girando Sol": "Limpeza", "Lava Roupas Girando Sol": "Limpeza", "Detergente": "Limpeza", "Sabão em pó": "Limpeza", "Água sanitária": "Limpeza", "Desinfetante": "Limpeza", "Esponja de louça": "Limpeza",
+    "Shampoo": "Higiene", "Condicionador": "Higiene", "Sabonete": "Higiene", "Creme dental": "Higiene", "Cerveja Heineken": "Bebidas"
+};
 
-    const listaProdutos = ["Amaciante", "Lava Roupas", "Trakinas", "Oreo", "Club Social", "Creme de Avelã"];
+// Banco de dados integrado Miller e Desco
+const promocoesMillerVigentes = {
+    "ovos": { preco: 12.98, detalhe: "Ovos Primavis 20Un" },
+    "arroz": { preco: 8.89, detalhe: "Arroz Rei Arthur 2Kg" },
+    "frango": { preco: 10.79, detalhe: "Peito de Frango Kg" },
+    "carne moida": { preco: 16.89, detalhe: "Acém Moído 500g" },
+    "carne moída": { preco: 16.89, detalhe: "Acém Moído 500g" },
+    "farofa": { preco: 7.98, detalhe: "Farofa Yoki 400g" },
+    "cerveja heineken": { preco: 9.49, detalhe: "Heineken 600ml" },
+    "sabao em po": { preco: 9.98, detalhe: "Brilhante 800g" },
+    "sabão em pó": { preco: 9.98, melt: "Brilhante 800g" },
+    "linguiça": { preco: 15.69, detalhe: "Excelsior Churrasco 800g" }
+};
 
-    function renderizar() {
-        const container = document.getElementById('listaProdutos');
-        container.innerHTML = "";
+const promocoesDescoVigentes = {
+    "amaciante girando sol": { preco: 19.47, detalhe: "Girando Sol Conc. 1.5L" },
+    "lava roupas girando sol": { preco: 27.12, detalhe: "Lava Roupas Líq. 3L" },
+    "biscoito trakinas": { preco: 2.69, detalhe: "Trakinas 126g" },
+    "biscoito oreo": { preco: 3.49, detalhe: "Oreo Original 90g" },
+    "biscoito club social": { preco: 4.79, detalhe: "Club Social 141g/144g" }
+};
+
+function obterCategoria(produto) {
+    return mapaCategorias[produto] || "Outros";
+}
+
+const itensPadrao = Object.keys(mapaCategorias);
+
+let gabaritoCustomizado = JSON.parse(localStorage.getItem("gabarito_custom")) || itensPadrao;
+let compras = JSON.parse(localStorage.getItem("compras_v3")) || [];
+let abaAtual = "gabarito";
+let grafico;
+let html5QrcodeScanner = null;
+
+const paginaGabarito = document.getElementById("paginaGabarito");
+const paginaCarrinho = document.getElementById("paginaCarrinho");
+const paginaHistorico = document.getElementById("paginaHistorico");
+const produtoHistorico = document.getElementById("produtoHistorico");
+
+function alternarScanner() {
+    const btn = document.getElementById("btnIniciarCamera");
+    if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+        html5QrcodeScanner.stop().then(() => {
+            btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+            btn.style.background = "#4f46e5";
+        }).catch(err => console.log(err));
+        return;
+    }
+    btn.innerText = "🛑 Desligar Câmera";
+    btn.style.background = "#ef4444";
+    if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); }
+    html5QrcodeScanner.start(
+        { facingMode: "environment" }, 
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (qrCodeMessage) => {
+            html5QrcodeScanner.stop().then(() => {
+                btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+                btn.style.background = "#4f46e5";
+                window.open(qrCodeMessage, '_blank');
+            }).catch(err => console.log(err));
+        },
+        (errorMessage) => { }
+    ).catch(err => {
+        alert("Aviso de Câmera.");
+        btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+        btn.style.background = "#4f46e5";
+    });
+}
+
+function buscarPrecoExterno(nomeProduto) {
+    window.open(`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(nomeProduto)}`, '_blank');
+}
+
+function obterMelhorOfertaHistorico(produto) {
+    let historicoValido = compras.filter(x => x.produto === produto && x.valor > 0 && x.comprado && x.mercado);
+    if(historicoValido.length === 0) return null;
+    let copiaHistorico = [...historicoValido];
+    copiaHistorico.sort((a, b) => a.valor - b.valor);
+    return { mercado: copiaHistorico[0].mercado, valor: copiaHistorico[0].valor };
+}
+
+function obterUltimoPrecoValido(produto) {
+    let historico = compras.filter(x => x.produto === produto && x.valor > 0 && x.comprado);
+    if(historico.length > 0) {
+        let copiaHistorico = [...historico];
+        copiaHistorico.sort((a,b) => new Date(b.data) - new Date(a.data));
+        return copiaHistorico[0].valor;
+    }
+    return 0;
+}
+
+function clicarFoguinhoPreencher(id, preco, mercado) {
+    const idx = compras.findIndex(x => x.id == id);
+    if (idx !== -1) {
+        compras[idx].valor = preco;
+        compras[idx].mercado = mercado;
         
-        listaProdutos.forEach(prod => {
-            const chave = Object.keys(promos).find(k => prod.toLowerCase().includes(k));
-            const itemPromo = promos[chave];
-            
-            const div = document.createElement('div');
-            div.className = 'item-card';
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
+        // Abre as configurações automaticamente para conferência
+        setTimeout(() => {
+            const d = document.getElementById(`detalhes-${id}`);
+            if(d) d.classList.add("ativo");
+        }, 100);
+        
+        salvar();
+    }
+}
+
+function clicarFoguinhoGabaritoPreencher(produto, preco, mercado) {
+    adicionarAoCarrinhoComDados(produto, preco, mercado);
+    alert(`"${produto}" enviado para lista atual com R$ ${preco.toFixed(2)} (${mercado})!`);
+}
+
+function renderizarFavoritos() {
+    const boxSugestoes = document.getElementById("secaoSugestoes");
+    const divFavs = document.getElementById("listaFavoritos");
+    divFavs.innerHTML = "";
+    
+    let contagem = {};
+    compras.filter(x => x.comprado).forEach(x => {
+        contagem[x.produto] = (contagem[x.produto] || 0) + 1;
+    });
+    
+    let ordenados = Object.keys(contagem).filter(prod => contagem[prod] >= 2);
+    ordenados.sort((a,b) => contagem[b] - contagem[a]);
+    
+    if(ordenados.length === 0) {
+        boxSugestoes.style.display = "none";
+        return;
+    }
+    if(abaAtual === "gabarito") boxSugestoes.style.display = "block";
+
+    let exibidos = 0;
+    for (let i = 0; i < ordenados.length; i++) {
+        if (exibidos >= 7) break;
+        let prod = ordenados[i];
+        const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
+        if(!jaAdicionado) {
+            divFavs.innerHTML += `<div class="badge-item" onclick="adicionarAoCarrinho('${prod.replace(/'/g, "\\'")}')">➕ ${prod}</div>`;
+            exibidos++;
+        }
+    }
+    if (exibidos === 0) boxSugestoes.style.display = "none";
+}
+
+function carregar() {
+    const busca = document.getElementById("busca").value.toLowerCase();
+    let pendentes = 0, comprados = 0, totalGeralItens = 0;
+
+    compras.forEach(item => {
+        if (!item.arquivado && item.noCarrinho) {
+            totalGeralItens++;
+            if (item.comprado) comprados++; else pendentes++;
+        }
+    });
+
+    document.getElementById("qtdItens").innerText = pendentes;
+    document.getElementById("qtdComprados").innerText = comprados;
+    document.getElementById("qtdTotalGeral").innerText = totalGeralItens;
+
+    if (abaAtual === "gabarito") {
+        paginaGabarito.innerHTML = "";
+        let produtosFiltrados = [...new Set(gabaritoCustomizado)].sort((a, b) => a.localeCompare(b, 'pt', { sensitivity: 'base' }));
+        let categoriesAtivas = {};
+        
+        produtosFiltrados.forEach(prod => {
+            if (busca && !prod.toLowerCase().includes(busca)) return;
+            let cat = obterCategoria(prod);
+            if(!categoriesAtivas[cat]) categoriesAtivas[cat] = [];
+            categoriesAtivas[cat].push(prod);
+        });
+
+        Object.keys(categoriesAtivas).sort().forEach(cat => {
+            paginaGabarito.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
+            categoriesAtivas[cat].forEach(prod => {
+                const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
+                let chavePromo = prod.toLowerCase().trim();
+                
+                let tagPromoHtml = '';
+                if (promocoesMillerVigentes[chavePromo]) {
+                    let p = promocoesMillerVigentes[chavePromo];
+                    tagPromoHtml = `<br><button class="tag-promocao-miller" onclick="clicarFoguinhoGabaritoPreencher('${prod.replace(/'/g, "\\'")}', ${p.preco}, 'Miller')">🔥 Miller: R$ ${p.preco.toFixed(2)}</button>`;
+                } else if (promocoesDescoVigentes[chavePromo]) {
+                    let p = promocoesDescoVigentes[chavePromo];
+                    tagPromoHtml = `<br><button class="tag-promocao-desco" onclick="clicarFoguinhoGabaritoPreencher('${prod.replace(/'/g, "\\'")}', ${p.preco}, 'Desco')">🔥 Desco: R$ ${p.preco.toFixed(2)}</button>`;
+                }
+
+                paginaGabarito.innerHTML += `
+                <div class="item-card">
                     <div>
-                        <strong style="font-size: 15px;">${prod}</strong><br>
-                        ${itemPromo ? `<button class="btn-tag ${itemPromo.classe}" onclick="alert('Aplicado: ${itemPromo.mercado} - R$ ${itemPromo.preco.toFixed(2)}')">
-                            🔥 ${itemPromo.mercado}: R$ ${itemPromo.preco.toFixed(2)}
-                        </button>` : '<span style="font-size:11px; color:var(--cinza)">Sem promo</span>'}
+                        <h3>${prod}</h3>
+                        ${tagPromoHtml}
                     </div>
-                    <button class="btn-add" onclick="alert('Adicionado à lista!')">➕</button>
-                </div>
-            `;
-            container.appendChild(div);
+                    <button class="btnAdicionar ${jaAdicionado ? 'ja-adicionado' : ''}" 
+                            onclick="${jaAdicionado ? '' : `adicionarAoCarrinho('${prod.replace(/'/g, "\\'")}')`}">
+                        ${jaAdicionado ? '✔ Na Lista' : '➕ Adicionar'}
+                    </button>
+                </div>`;
+            });
         });
     }
 
-    renderizar();
+    if (abaAtual === "carrinho") {
+        document.getElementById("secaoSugestoes").style.display = "none";
+        paginaCarrinho.innerHTML = "";
+        let itensAtivos = compras.filter(x => x.noCarrinho && !x.arquivado);
+
+        if(itensAtivos.length === 0) {
+            paginaCarrinho.innerHTML = `<p style="text-align:center; color:var(--cinza); padding:30px; grid-column: 1 / -1;">Sua lista atual está vazia.</p>`;
+        }
+
+        let categoriesCarrinho = {};
+        itensAtivos.forEach(item => {
+            if (busca && !item.produto.toLowerCase().includes(busca)) return;
+            let cat = obterCategoria(item.produto);
+            if(!categoriesCarrinho[cat]) categoriesCarrinho[cat] = [];
+            categoriesCarrinho[cat].push(item);
+        });
+
+        Object.keys(categoriesCarrinho).sort().forEach(cat => {
+            paginaCarrinho.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
+            categoriesCarrinho[cat].forEach(item => {
+                const indexReal = compras.findIndex(x => x.id === item.id);
+                let preçoSugerido = item.valor || obterUltimoPrecoValido(item.produto);
+                let chavePromo = item.produto.toLowerCase().trim();
+                
+                let textoOferta = "";
+                if (promocoesMillerVigentes[chavePromo]) {
+                    let p = promocoesMillerVigentes[chavePromo];
+                    textoOferta = `<br><button class="tag-promocao-miller" onclick="clicarFoguinhoPreencher(${item.id}, ${p.preco}, 'Miller')">🔥 Clicar para aplicar Miller: R$ ${p.preco.toFixed(2)}</button>`;
+                } else if (promocoesDescoVigentes[chavePromo]) {
+                    let p = promocoesDescoVigentes[chavePromo];
+                    textoOferta = `<br><button class="tag-promocao-desco" onclick="clicarFoguinhoPreencher(${item.id}, ${p.preco}, 'Desco')">🔥 Clicar para aplicar Desco: R$ ${p.preco.toFixed(2)}</button>`;
+                } else {
+                    let melhorOferta = obterMelhorOfertaHistorico(item.produto);
+                    textoOferta = melhorOferta ? `<br><span class="tag-melhor-preco">🏷 Histórico: R$ ${melhorOferta.valor.toFixed(2)} (${melhorOferta.mercado})</span>` : '';
+                }
+
+                paginaCarrinho.innerHTML += `
+                <div class="item-card ${item.comprado ? 'comprado' : ''}">
+                    <div class="flex-col">
+                        <div class="topo-card">
+                            <div>
+                                <h3 onclick="toggleDetalhesCard(${item.id})">${item.produto}</h3>
+                                ${textoOferta}
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <button class="btnToggleDetalhes" onclick="toggleDetalhesCard(${item.id})">⚙ Config</button>
+                                <button class="btnRemover" onclick="removerDoCarrinho(${indexReal})">✕</button>
+                            </div>
+                        </div>
+                        
+                        <div id="detalhes-${item.id}" class="detalhes-produto">
+                            <div>
+                                <button class="btnBuscarNfg" onclick="buscarPrecoExterno('${item.produto.replace(/'/g, "\\'")}')">
+                                    🔍 Pesquisar Ofertas na Internet
+                                </button>
+                            </div>
+                            
+                            <div class="linha-inputs">
+                                <div class="campo">
+                                    <label>Status</label>
+                                    <select id="statusSelect-${item.id}" onchange="alterarStatus(${indexReal}, this.value, ${item.id})">
+                                        <option value="false" ${!item.comprado ? 'selected' : ''}>⚠ Falta</option>
+                                        <option value="true" ${item.comprado ? 'selected' : ''}>✔ Ok</option>
+                                    </select>
+                                </div>
+                                <div class="campo">
+                                    <label>Qtd</label>
+                                    <input type="number" style="width:50px;" min="1" value="${item.quantidade || 1}" onchange="alterarQuantidade(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo">
+                                    <label>Preço Unit.</label>
+                                    <input type="number" style="width:70px;" step="0.01" placeholder="${preçoSugerido ? preçoSugerido.toFixed(2) : '0,00'}" value="${item.valor || ''}" onchange="alterarValor(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo">
+                                    <label>Mercado</label>
+                                    <input type="text" style="width:100px;" placeholder="Ex: Atacadão" value="${item.mercado || ''}" onchange="alterarMercado(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo">
+                                    <label>Data</label>
+                                    <input type="date" style="width:110px;" value="${item.data || ''}" onchange="alterarData(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo" style="margin-left:auto; text-align:right;">
+                                    <label>Subtotal</label>
+                                    <div class="valor-total">R$ ${((item.valor || 0) * (item.quantidade || 1)).toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        });
+    }
+
+    renderizarFavoritos();
+    carregarFiltroProdutosGrafico();
+}
+
+function toggleDetalhesCard(id) {
+    const elem = document.getElementById(`detalhes-${id}`);
+    if(elem) elem.classList.toggle("ativo");
+}
+
+function cadastrarNovoProdutoGeral() {
+    const inputBusca = document.getElementById("busca");
+    const nomeNovo = inputBusca.value.trim();
+    if (!nomeNovo) return;
+    if (!gabaritoCustomizado.some(x => x.toLowerCase() === nomeNovo.toLowerCase())) {
+        gabaritoCustomizado.push(nomeNovo);
+        localStorage.setItem("gabarito_custom", JSON.stringify(gabaritoCustomizado));
+    }
+    adicionarAoCarrinho(nomeNovo);
+    inputBusca.value = "";
+    carregar();
+}
+
+function adicionarAoCarrinho(nomeProduto) {
+    compras.push({
+        id: Date.now() + Math.random(),
+        produto: nomeProduto,
+        quantidade: 1,
+        valor: 0,
+        mercado: "",
+        data: new Date().toISOString().split('T')[0],
+        comprado: false,
+        noCarrinho: true,
+        arquivado: false
+    });
+    salvar();
+}
+
+function adicionarAoCarrinhoComDados(nomeProduto, preco, mercado) {
+    compras.push({
+        id: Date.now() + Math.random(),
+        produto: nomeProduto,
+        quantidade: 1,
+        valor: preco,
+        mercado: mercado,
+        data: new Date().toISOString().split('T')[0],
+        comprado: false,
+        noCarrinho: true,
+        arquivado: false
+    });
+    salvar();
+}
+
+function removerDoCarrinho(index) {
+    if(compras[index].valor === 0) compras.splice(index, 1); else compras[index].noCarrinho = false;
+    salvar();
+}
+
+function mudarAba(aba) {
+    abaAtual = aba;
+    document.getElementById("btnAbaGabarito").classList.remove("ativo");
+    document.getElementById("btnAbaCarrinho").classList.remove("ativo");
+    document.getElementById("btnAbaHistorico").classList.remove("ativo");
+    document.getElementById("btnVirarMes").classList.add("oculto");
+    document.getElementById("secaoScanner").classList.add("oculto");
+    paginaGabarito.classList.add("oculto");
+    paginaCarrinho.classList.add("oculto");
+    paginaHistorico.classList.add("oculto");
+
+    if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+        html5QrcodeScanner.stop().then(() => {
+            const btn = document.getElementById("btnIniciarCamera");
+            btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+            btn.style.background = "#4f46e5";
+        });
+    }
+
+    if (aba === "gabarito") {
+        document.getElementById("btnAbaGabarito").classList.add("ativo");
+        paginaGabarito.classList.remove("oculto");
+    } else if (aba === "carrinho") {
+        document.getElementById("btnAbaCarrinho").classList.add("ativo");
+        paginaCarrinho.classList.remove("oculto");
+        document.getElementById("btnVirarMes").classList.remove("oculto");
+        document.getElementById("secaoScanner").classList.remove("oculto"); 
+    } else if (aba === "historico") {
+        document.getElementById("btnAbaHistorico").classList.add("ativo");
+        paginaHistorico.classList.remove("oculto");
+        atualizarGrafico();
+    }
+    carregar();
+}
+
+function alterarStatus(index, val, idElemento) { 
+    if (val === "true" && (!compras[index].valor || compras[index].valor <= 0)) {
+        alert(`Digite o preço de "${compras[index].produto}" antes de marcar como comprado.`);
+        const select = document.getElementById(`statusSelect-${idElemento}`);
+        if(select) select.value = "false";
+        return;
+    }
+    compras[index].comprado = (val === "true"); 
+    salvar(); 
+}
+
+function alterarQuantidade(index, val) { compras[index].quantidade = Number(val) || 1; salvar(); }
+function alterarValor(index, val) { compras[index].valor = Number(val) || 0; salvar(); }
+function alterarData(index, val) { compras[index].data = val; salvar(); }
+function alterarMercado(index, val) { compras[index].mercado = val; salvar(); }
+
+function salvar() {
+    localStorage.setItem("compras_v3", JSON.stringify(compras));
+    carregar();
+}
+
+function carregarFiltroProdutosGrafico(){
+    let UrbanPr = [...new Set(compras.filter(x => x.valor > 0).map(x => x.produto))].sort();
+    let anterior = produtoHistorico.value;
+    produtoHistorico.innerHTML = "";
+    if(UrbanPr.length === 0) {
+        produtoHistorico.innerHTML = "<option>Nenhum histórico disponível</option>";
+        return;
+    }
+    UrbanPr.forEach(prod => { produtoHistorico.innerHTML += `<option value="${prod}">${prod}</option>`; });
+    if(anterior && UrbanPr.includes(anterior)) produtoHistorico.value = anterior;
+}
+
+produtoHistorico.addEventListener("change", atualizarGrafico);
+
+function atualizarGrafico(){
+    let prod = produtoHistorico.value;
+    let dados = compras.filter(x => x.produto === prod && x.valor > 0 && x.data).sort((a,b) => new Date(a.data) - new Date(b.data));
+    if(dados.length === 0) {
+        document.getElementById("menorPreco").innerText = "R$ 0,00";
+        document.getElementById("maiorPreco").innerText = "R$ 0,00";
+        document.getElementById("ultimoPreco").innerText = "R$ 0,00";
+        if(grafico) grafico.destroy();
+        return;
+    }
+    let labels = dados.map(x => {
+        let p = x.data.split('-');
+        return x.mercado ? `${p[2]}/${p[1]} (${x.mercado})` : `${p[2]}/${p[1]}`;
+    });
+    let valores = dados.map(x => x.valor);
+    if(grafico) grafico.destroy();
+    grafico = new Chart(document.getElementById("grafico"), {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Preço', data: valores, borderColor: '#2563eb', fill: false }] }
+    });
+    let menorItem = [...dados].sort((a,b) => a.valor - b.valor)[0];
+    let maiorItem = [...dados].sort((a,b) => b.valor - a.valor)[0];
+    let ultimoItem = dados[dados.length - 1];
+    document.getElementById("menorPreco").innerText = `R$ ${menorItem.valor.toFixed(2)} (${menorItem.mercado || '?'})`;
+    document.getElementById("maiorPreco").innerText = `R$ ${maiorItem.valor.toFixed(2)} (${maiorItem.mercado || '?'})`;
+    document.getElementById("ultimoPreco").innerText = `R$ ${ultimoItem.valor.toFixed(2)} (${ultimoItem.mercado || '?'})`;
+}
+
+function novoMes(){
+    if(!confirm("Deseja fechar o mês?")) return;
+    compras.forEach(item => {
+        if(item.noCarrinho && !item.arquivado) {
+            if(item.comprado && item.valor > 0) item.arquivado = true; else item.noCarrinho = false;
+        }
+    });
+    salvar();
+}
+
+function exportarDados() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ gabarito: gabaritoCustomizado, compras: compras }));
+    const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", `backup.json`); dl.click();
+}
+
+function importarDados() {
+    const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+    input.onchange = e => {
+        const file = e.target.files[0]; const reader = new FileReader(); reader.readAsText(file,'UTF-8');
+        reader.onload = re => {
+            let d = JSON.parse(re.target.result);
+            if(d.compras) { compras = d.compras; gabaritoCustomizado = d.gabarito; salvar(); alert("Pronto!"); }
+        }
+    }; input.click();
+}
+
+carregar();
 </script>
 </body>
 </html>
