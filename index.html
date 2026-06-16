@@ -292,8 +292,8 @@
         </div>
 
         <div class="footer-version">
-            <strong>Versão do App: 2.1.0</strong><br>
-            Suporte a NFC-e SEFAZ e Auto-Categorização Ativa.
+            <strong>Versão do App: 2.1.1</strong><br>
+            Ajuste de Inicialização de Câmera & Correção de Tela Preta.
         </div>
     </div>
 
@@ -310,7 +310,7 @@
         // Banco de dados local (Simulado)
         let itensSalvos = JSON.parse(localStorage.getItem('lista_compras')) || [];
 
-        // Dicionário inteligente para categorização automática (Itens do cupom inclusos!)
+        // Dicionário inteligente para categorização automática (Itens do cupom inclusos)
         const mapaCategorias = {
             "refri sprite 2l zero": "Bebidas",
             "refresco tang 18g ma": "Bebidas",
@@ -337,7 +337,9 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
             document.getElementById(`tab-${tabName}`).classList.add('active');
             if(tabName !== 'scanner') fecharCamerabox();
         }
@@ -351,7 +353,6 @@
                 return;
             }
 
-            // Agrupa por categoria
             const categorias = {};
             itensSalvos.forEach(item => {
                 if (!categorias[item.categoria]) categorias[item.categoria] = [];
@@ -415,7 +416,6 @@
             nomeInput.value = '';
             catSelect.value = 'Outros';
             switchTab('lista');
-            document.querySelectorAll('.tab')[0].click(); 
         }
 
         function alternarStatus(id) {
@@ -440,10 +440,11 @@
             renderizarLista();
         }
 
-        // ================= INSTASCAN & SCANNER DE CUPOM =================
+        // ================= FUNÇÃO DA CÂMERA AJUSTADA (CORREÇÃO TELA PRETA) =================
 
         function iniciarCamera() {
             document.getElementById('camera-container').style.display = 'block';
+            
             scannerInstancia = new Instascan.Scanner({ video: document.getElementById('video'), mirror: false });
 
             scannerInstancia.addListener('scan', function (content) {
@@ -451,19 +452,41 @@
                 processarDadosQrCode(content);
             });
 
-            Instascan.Camera.getCameras().then(function (cameras) {
-                if (cameras.length > 0) {
-                    // Tenta usar a câmera traseira se disponível
-                    let camaraTraseira = cameras.find(c => c.name.toLowerCase().includes('back')) || cameras[0];
-                    scannerInstancia.start(camaraTraseira);
-                } else {
-                    alert('Nenhuma câmera encontrada no dispositivo.');
+            // Configuração moderna para forçar o hardware da câmera traseira externa
+            const restricoes = {
+                video: { facingMode: "environment" },
+                audio: false
+            };
+
+            // Solicita permissão ativa nativa ao navegador antes de rodar a biblioteca
+            navigator.mediaDevices.getUserMedia(restricoes)
+            .then(function(stream) {
+                Instascan.Camera.getCameras().then(function (cameras) {
+                    if (cameras.length > 0) {
+                        // Varre a lista de lentes disponíveis no celular procurando a de trás
+                        let camaraTraseira = cameras.find(c => c.name.toLowerCase().includes('back') || c.name.toLowerCase().includes('traseira')) || cameras[cameras.length - 1];
+                        scannerInstancia.start(camaraTraseira);
+                    } else {
+                        alert('Nenhuma câmera de vídeo foi detectada no dispositivo.');
+                        fecharCamerabox();
+                    }
+                });
+            })
+            .catch(function (e) {
+                console.warn("Falha ao forçar a câmera em modo estrito, tentando inicialização padrão...", e);
+                
+                // Segunda tentativa de contingência genérica para navegadores antigos ou computadores
+                Instascan.Camera.getCameras().then(function (cameras) {
+                    if (cameras.length > 0) {
+                        scannerInstancia.start(cameras[0]);
+                    } else {
+                        alert('Erro ao acessar a câmera. Certifique-se de que o site possui permissão de mídia nas configurações do seu navegador.');
+                        fecharCamerabox();
+                    }
+                }).catch(function(err) {
+                    alert('Erro crítico de hardware ou falta de ambiente HTTPS seguro: ' + err);
                     fecharCamerabox();
-                }
-            }).catch(function (e) {
-                console.error(e);
-                alert('Erro ao acessar a câmera: ' + e);
-                fecharCamerabox();
+                });
             });
         }
 
@@ -476,26 +499,22 @@
 
         function processarPorChave() {
             const txt = document.getElementById('chave-acesso-input').value.replace(/\s/g, '');
-            if(txt.length < 44) return alert("A chave de acesso precisa ter 44 números.");
+            if(txt.length < 44) return alert("A chave de acesso precisa ter exatamente 44 números.");
             processarDadosQrCode("https://www.sefaz.rs.gov.br/NFCE/NFCE-COM.aspx?p=" + txt);
         }
 
-        // Função de Processamento com Tratamento de Erros (.catch) ativo e integrado!
         function processarDadosQrCode(urlDados) {
             alert("Buscando dados do cupom na SEFAZ...");
 
-            // Consumindo API pública de extração baseada na URL/Chave do QR Code
             fetch(`https://api.nfeio.com/v1/nfe/qrcode?url=${encodeURIComponent(urlDados)}`)
             .then(res => res.json())
             .then(dadosFiscais => {
                 if(!dadosFiscais.items || dadosFiscais.items.length === 0) {
-                    throw new Error("Produtos não encontrados na resposta");
+                    throw new Error("Produtos não localizados na nota fiscal.");
                 }
 
                 dadosFiscais.items.forEach(prod => {
                     let catDescoberta = descobrirCategoria(prod.description);
-                    
-                    // Verifica se o item já existe na lista para atualizar, se não, cria
                     let itemExistente = itensSalvos.find(i => i.nome.toLowerCase() === prod.description.toLowerCase());
 
                     if(itemExistente) {
@@ -513,9 +532,8 @@
                 });
 
                 salvarDados();
-                alert("Lista atualizada com sucesso com os dados do cupom!");
+                alert("Sua lista foi atualizada com sucesso utilizando os dados do cupom!");
                 switchTab('lista');
-                document.querySelectorAll('.tab')[0].click();
             })
             .catch(erro => {
                 console.error(erro);
@@ -523,7 +541,7 @@
             });
         }
 
-        // Inicialização
+        // Inicialização do App
         renderizarLista();
     </script>
 </body>
