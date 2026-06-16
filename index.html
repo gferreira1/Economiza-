@@ -314,6 +314,22 @@ header h1{
     cursor: pointer;
 }
 
+/* Estilo para a tag Via Atacadista (Laranja e Branco) */
+.tag-promocao-via {
+    font-size: 11px;
+    color: #ffffff;
+    background: #f97316; /* Laranja da marca */
+    border: 1px solid #ea580c;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
 .btnAdicionar {
     border: none; padding: 8px 12px; border-radius: 8px;
     background: #dcfce7; color: #15803d; font-weight: 600; cursor: pointer;
@@ -536,6 +552,35 @@ const promocoesDescoVigentes = {
     "fralda": { preco: 29.90, detalhe: "Babysec" },
     "guardanapo": { preco: 1.59, detalhe: "Confitá C/50" }
 };
+const promocoesViaVigentes = {
+    "massa de sêmola": { preco: 2.39, detalhe: "Isabela (400g)" },
+    "salsicha": { preco: 21.90, detalhe: "Sadia/Perdigão (Kg)" },
+    "filé de peito de frango": { preco: 12.99, detalhe: "Kg" },
+    "bombom": { preco: 10.99, detalhe: "Garoto (250g)" },
+    "café solúvel": { preco: 19.90, detalhe: "Nescafé (200g)" },
+    "vinho": { preco: 19.98, detalhe: "Santa Helena (750ml)" },
+    "fralda": { preco: 81.90, detalhe: "Pampers Confort Sec" },
+    "sabão em pó": { preco: 19.90, detalhe: "Tixan Ypê (2,4kg)" },
+    "azeitona": { preco: 11.99, detalhe: "Verde/Preta" },
+    "ketchup": { preco: 13.98, detalhe: "Unidade" },
+    "óleo de canola": { preco: 9.90, detalhe: "900ml" },
+    "extrato de tomate": { preco: 4.69, detalhe: "Elefante" },
+    "maionese": { preco: 14.99, detalhe: "Hellmann's" },
+    "feijão": { preco: 5.99, detalhe: "Carioca" },
+    "lentilha": { preco: 5.79, detalhe: "Kg" },
+    "amendoim": { preco: 9.98, detalhe: "C/ Casca" },
+    "leite condensado": { preco: 4.59, detalhe: "Italac" },
+    "leite ninho": { preco: 15.99, detalhe: "400g" },
+    "mistura para bolo": { preco: 1.79, detalhe: "Reny" },
+    "mistura brownie": { preco: 5.99, detalhe: "Dr. Oetker" },
+    "café solúvel iguaçu": { preco: 22.99, detalhe: "160g" },
+    "café em pó": { preco: 19.90, detalhe: "500g" },
+    "biscoito amori": { preco: 24.90, detalhe: "Recheado" },
+    "biscoito palito": { preco: 9.90, detalhe: "120g" },
+    "doritos": { preco: 16.99, detalhe: "Pacote" },
+    "achocolatado": { preco: 13.90, detalhe: "Active Power" },
+    "biscoito água e sal": { preco: 1.99, detalhe: "Bento" }
+};
 function obterCategoria(produto) {
     return mapaCategorias[produto] || "Outros";
 }
@@ -692,13 +737,18 @@ function carregar() {
                 let chavePromo = prod.toLowerCase().trim();
                 
                 let tagPromoHtml = '';
-                if (promocoesMillerVigentes[chavePromo]) {
-                    let p = promocoesMillerVigentes[chavePromo];
-                    tagPromoHtml = `<br><button class="tag-promocao-miller" onclick="clicarFoguinhoGabaritoPreencher('${prod.replace(/'/g, "\\'")}', ${p.preco}, 'Miller')">🔥 Miller: R$ ${p.preco.toFixed(2)}</button>`;
-                } else if (promocoesDescoVigentes[chavePromo]) {
-                    let p = promocoesDescoVigentes[chavePromo];
-                    tagPromoHtml = `<br><button class="tag-promocao-desco" onclick="clicarFoguinhoGabaritoPreencher('${prod.replace(/'/g, "\\'")}', ${p.preco}, 'Desco')">🔥 Desco: R$ ${p.preco.toFixed(2)}</button>`;
-                }
+
+                        if (promocoesMillerVigentes[chavePromo]) {
+                            let p = promocoesMillerVigentes[chavePromo];
+                            tagPromoHtml = `<br><button class="tag-promocao-miller" onclick="clicarFoguinhoGabaritoPreencher('${prod.replace(/'/g, "\\'")}', ${p.preco}, 'Miller')">🔥 Miller: R$ ${p.preco.toFixed(2)}</button>`;
+                        } else if (promocoesDescoVigentes[chavePromo]) {
+                            let p = promocoesDescoVigentes[chavePromo];
+                            tagPromoHtml = `<br><button class="tag-promocao-desco" onclick="clicarFoguinhoGabaritoPreencher('${prod.replace(/'/g, "\\'")}', ${p.preco}, 'Desco')">🔥 Desco: R$ ${p.preco.toFixed(2)}</button>`;
+                        } else if (promocoesViaVigentes[chavePromo]) {
+                            let p = promocoesViaVigentes[chavePromo];
+                            tagPromoHtml = `<br><button class="tag-promocao-via" onclick="clicarFoguinhoGabaritoPreencher('${prod.replace(/'/g, "\\'")}', ${p.preco}, 'Via')">🔥 Via: R$ ${p.preco.toFixed(2)}</button>`;
+                        }
+                                        
 
                 paginaGabarito.innerHTML += `
                 <div class="item-card">
@@ -740,16 +790,20 @@ function carregar() {
                 let chavePromo = item.produto.toLowerCase().trim();
                 
                 let textoOferta = "";
-                if (promocoesMillerVigentes[chavePromo]) {
-                    let p = promocoesMillerVigentes[chavePromo];
-                    textoOferta = `<br><button class="tag-promocao-miller" onclick="clicarFoguinhoPreencher(${item.id}, ${p.preco}, 'Miller')">🔥 Clicar para aplicar Miller: R$ ${p.preco.toFixed(2)}</button>`;
-                } else if (promocoesDescoVigentes[chavePromo]) {
-                    let p = promocoesDescoVigentes[chavePromo];
-                    textoOferta = `<br><button class="tag-promocao-desco" onclick="clicarFoguinhoPreencher(${item.id}, ${p.preco}, 'Desco')">🔥 Clicar para aplicar Desco: R$ ${p.preco.toFixed(2)}</button>`;
-                } else {
-                    let melhorOferta = obterMelhorOfertaHistorico(item.produto);
-                    textoOferta = melhorOferta ? `<br><span class="tag-melhor-preco">🏷 Histórico: R$ ${melhorOferta.valor.toFixed(2)} (${melhorOferta.mercado})</span>` : '';
-                }
+
+                            if (promocoesMillerVigentes[chavePromo]) {
+                                let p = promocoesMillerVigentes[chavePromo];
+                                textoOferta = `<br><button class="tag-promocao-miller" onclick="clicarFoguinhoPreencher(${item.id}, ${p.preco}, 'Miller')">🔥 Clicar para aplicar Miller: R$ ${p.preco.toFixed(2)}</button>`;
+                            } else if (promocoesDescoVigentes[chavePromo]) {
+                                let p = promocoesDescoVigentes[chavePromo];
+                                textoOferta = `<br><button class="tag-promocao-desco" onclick="clicarFoguinhoPreencher(${item.id}, ${p.preco}, 'Desco')">🔥 Clicar para aplicar Desco: R$ ${p.preco.toFixed(2)}</button>`;
+                            } else if (promocoesViaVigentes[chavePromo]) {
+                                let p = promocoesViaVigentes[chavePromo];
+                                textoOferta = `<br><button class="tag-promocao-via" onclick="clicarFoguinhoPreencher(${item.id}, ${p.preco}, 'Via')">🔥 Clicar para aplicar Via: R$ ${p.preco.toFixed(2)}</button>`;
+                            } else {
+                                let melhorOferta = obterMelhorOfertaHistorico(item.produto);
+                                textoOferta = melhorOferta ? `<br><span class="tag-melhor-preco">🏷 Histórico: R$ ${melhorOferta.valor.toFixed(2)} (${melhorOferta.mercado})</span>` : '';
+                            }
 
                 paginaCarrinho.innerHTML += `
                 <div class="item-card ${item.comprado ? 'comprado' : ''}">
