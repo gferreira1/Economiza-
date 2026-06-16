@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lista de Compras - Santa Cruz do Sul</title>
+<title>Controle de Compras Inteligente</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
@@ -32,7 +32,6 @@
 body{
     background:var(--fundo);
     color:#0f172a;
-    padding-bottom: 80px;
 }
 
 header{
@@ -40,30 +39,10 @@ header{
     color:white;
     padding:15px 20px;
     text-align:center;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
 }
 
 header h1{
     font-size: 20px;
-}
-
-.btnGerenciar, .btnAutoBuscar {
-    background: #8b5cf6;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.btnAutoBuscar {
-    background: #16a34a;
 }
 
 .dashboard{
@@ -93,6 +72,9 @@ header h1{
 .cardResumo h2{
     margin-top:2px;
     font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #qtdItens { color: var(--vermelho); }
@@ -118,6 +100,7 @@ header h1{
     color:#334155;
     font-weight: 600;
     font-size: 12px;
+    text-align: center;
 }
 
 .menu button.ativo {
@@ -126,6 +109,7 @@ header h1{
 }
 
 @media (max-width: 600px) {
+    body { padding-bottom: 80px; }
     .menu {
         position: fixed;
         bottom: 0; left: 0; right: 0;
@@ -143,12 +127,12 @@ header h1{
     .menu button.ativo { background: transparent; color: var(--azul); }
 }
 
+/* Área do Scanner de Nota Fiscal */
 .container-scanner {
     max-width: 1200px;
     margin: 10px auto;
     padding: 0 12px;
 }
-
 .btnScanner {
     width: 100%;
     background: #4f46e5;
@@ -163,14 +147,15 @@ header h1{
     align-items: center;
     justify-content: center;
     gap: 8px;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
 }
-
 #reader {
     width: 100%;
     max-width: 400px;
     margin: 10px auto;
     border-radius: 12px;
     overflow: hidden;
+    border: none !important;
 }
 
 .secao-sugestoes {
@@ -179,14 +164,18 @@ header h1{
     max-width: 1200px;
     margin: 0 auto 15px auto;
 }
-
+.secao-sugestoes p {
+    font-size: 11px;
+    color: var(--cinza);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
 .badges-favoritos {
     display: flex;
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 5px;
 }
-
 .badge-item {
     background: #dbeafe;
     color: #1e40af;
@@ -228,6 +217,7 @@ header h1{
     color: white;
     cursor: pointer;
     font-weight: 600;
+    font-size: 13px;
 }
 
 .btnVirarMes {
@@ -293,19 +283,16 @@ header h1{
     font-weight: 600;
 }
 
-.tag-promocao {
+.tag-promocao-miller {
     font-size: 11px;
-    color: white;
-    background: #dc2626;
-    border: none;
+    color: #b45309;
+    background: #fef3c7;
+    border: 1px dashed #f59e0b;
     padding: 4px 8px;
     border-radius: 6px;
     margin-top: 4px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+    display: inline-block;
     font-weight: 700;
-    cursor: pointer;
 }
 
 .btnAdicionar {
@@ -335,6 +322,7 @@ header h1{
     gap: 4px;
     margin-bottom: 8px;
 }
+.btnBuscarNfg:hover { background: #f1f5f9; border-color: #94a3b8; }
 
 .btnToggleDetalhes { background: none; border: none; color: var(--azul); font-size: 11px; cursor: pointer; }
 .valor-total{ font-size:14px; font-weight:bold; color: var(--verde); }
@@ -351,44 +339,15 @@ header h1{
 #paginaHistorico .card-estatistica span { font-size: 10px; color: var(--cinza); }
 #paginaHistorico .card-estatistica h2 { font-size: 13px; margin-top: 2px; }
 
-.secao-backup { max-width: 1200px; margin: 15px auto; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.secao-backup { max-width: 1200px; margin: 15px auto; display: flex; gap: 8px; justify-content: center; }
 .secao-backup button { background: transparent; border: 1px solid var(--borda); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: var(--cinza); cursor: pointer; }
-
-.progresso {
-    position: fixed;
-    bottom: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1e40af;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
-    z-index: 10001;
-    min-width: 280px;
-    text-align: center;
-    font-size: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    display: none;
-}
-
-.progresso .barra {
-    height: 4px;
-    background: #60a5fa;
-    border-radius: 2px;
-    margin-top: 8px;
-    transition: width 0.3s;
-}
 </style>
 </head>
 
 <body>
 
 <header>
-    <h1>🛒 Lista de Compras - Santa Cruz do Sul</h1>
-    <div style="display: flex; gap: 8px;">
-        <button class="btnAutoBuscar" onclick="buscarTodasOfertasAutomatico()">🤖 Buscar Ofertas</button>
-        <button class="btnGerenciar" onclick="abrirGerenciarPromocoes()">⚙️ Promoções</button>
-    </div>
+    <h1>🛒 Lista de Compras Inteligente</h1>
 </header>
 
 <div class="dashboard">
@@ -420,13 +379,13 @@ header h1{
 </div>
 
 <div id="secaoSugestoes" class="secao-sugestoes">
-    <p>⭐ Produtos que você mais compra:</p>
+    <p>⭐ Mais Comprados Frequentemente:</p>
     <div id="listaFavoritos" class="badges-favoritos"></div>
 </div>
 
 <div class="filtros">
     <div class="linha-busca">
-        <input id="busca" type="text" placeholder="🔍 Buscar ou digitar novo produto..." onkeyup="carregar()">
+        <input id="busca" type="text" placeholder="🔍 Buscar ou digitar novo..." onkeyup="carregar()">
         <button class="btnNovoProduto" onclick="cadastrarNovoProdutoGeral()"> Criar</button>
     </div>
     <button id="btnVirarMes" class="btnVirarMes oculto" onclick="novoMes()"> Fechar Mês / Limpar Lista</button>
@@ -441,6 +400,7 @@ header h1{
         <select id="produtoHistorico"></select>
         <canvas id="grafico"></canvas>
     </div>
+
     <div class="estatisticas" style="grid-column: 1 / -1;">
         <div class="card-estatistica">
             <span>Menor Preço</span>
@@ -460,345 +420,114 @@ header h1{
 <div class="secao-backup">
     <button onclick="exportarDados()">💾 Exportar Backup</button>
     <button onclick="importarDados()">📂 Importar Backup</button>
-    <button onclick="adicionarNovoMercado()">🏪 + Novo Mercado</button>
-</div>
-
-<div id="progresso" class="progresso">
-    <div id="progressoTexto">Buscando ofertas...</div>
-    <div class="barra" id="progressoBarra" style="width:0%"></div>
 </div>
 
 <script>
-// ========== CATEGORIAS DOS PRODUTOS ==========
 const mapaCategorias = {
-    "Arroz": "Mercearia", "Feijão": "Mercearia", "Macarrão": "Mercearia", "Açúcar": "Mercearia", "Óleo": "Mercearia", "Sal": "Mercearia", "Farinha": "Mercearia", "Farofa": "Mercearia",
-    "Carne": "Açougue", "Frango": "Açougue", "Linguiça": "Açougue", "Ovos": "Frios", "Queijo": "Frios", "Presunto": "Frios",
-    "Batata": "Hortifruti", "Cebola": "Hortifruti", "Tomate": "Hortifruti", "Alho": "Hortifruti", "Banana": "Hortifruti", "Maçã": "Hortifruti",
-    "Pão": "Padaria", "Biscoito": "Padaria",
-    "Papel": "Limpeza", "Amaciante": "Limpeza", "Sabão": "Limpeza", "Detergente": "Limpeza",
-    "Café": "Bebidas", "Leite": "Bebidas", "Refrigerante": "Bebidas", "Cerveja": "Bebidas"
+    "Água com gás": "Bebidas", "Água mineral": "Bebidas", "Refrigerante": "Bebidas", "Café": "Matinais", "Leite": "Matinais", "Erva-mate": "Matinais", "Achocolatado": "Matinais",
+    "Arroz": "Mercearia", "Feijão": "Mercearia", "Macarrão": "Mercearia", "Açúcar": "Mercearia", "Óleo": "Mercearia", "Sal": "Mercearia", "Farinha de trigo": "Mercearia", "Farofa": "Mercearia", "Vinagre": "Mercearia",
+    "Molho de tomate": "Mercearia", "Milho verde": "Enlatados", "Ervilha": "Enlatados", "Maionese": "Molhos", "Ketchup": "Molhos", "Mostarda": "Molhos",
+    "Carne bovina": "Açougue", "Carne Moída": "Açougue", "Frango": "Açougue", "Linguiça": "Açougue", "Queijo": "Frios e Laticínios", "Presunto": "Frios e Laticínios", "Ovos": "Frios e Laticínios",
+    "Batata": "Hortifrúti", "Batata palha": "Mercearia", "Cebola": "Hortifrúti", "Tomate": "Hortifrúti", "Cenoura": "Hortifrúti", "Alface": "Hortifrúti", "Alho": "Hortifrúti",
+    "Banana": "Hortifrúti", "Maçã": "Hortifrúti", "Laranja": "Hortifrúti", "Pão": "Padaria", "Bolacha/Biscoito": "Padaria", "Margarina": "Frios e Laticínios", "Chimia/Geleia": "Matinais",
+    "Papel higiênico": "Higiene", "Papel toalha": "Limpeza", "Detergente": "Limpeza", "Sabão em pó": "Limpeza", "Água sanitária": "Limpeza", "Desinfetante": "Limpeza", "Esponja de louça": "Limpeza",
+    "Shampoo": "Higiene", "Condicionador": "Higiene", "Sabonete": "Higiene", "Creme dental": "Higiene", "Cerveja Heineken": "Bebidas"
+};
+
+// Banco de dados interno extraído do panfleto de ofertas Miller vigentes
+const promocoesMillerVigentes = {
+    "ovos": { preco: 12.98, detalhe: "Ovos Primavis Brancos 20 Un" },
+    "arroz": { preco: 8.89, detalhe: "Arroz Rei Arthur Branco T1 2Kg" },
+    "frango": { preco: 10.79, detalhe: "Peito de Frango c/ Osso Cong. Kg" },
+    "carne moida": { preco: 16.89, detalhe: "Carne Moída Acém Cong. 500g" },
+    "carne moída": { preco: 16.89, detalhe: "Carne Moída Acém Cong. 500g" },
+    "farofa": { preco: 7.98, detalhe: "Farofa Temperada Yoki 400g" },
+    "cerveja heineken": { preco: 9.49, detalhe: "Cerveja Heineken 600ml" },
+    "sabao em po": { preco: 9.98, detalhe: "Lava Roupas Brilhante Cores 800g" },
+    "sabão em pó": { preco: 9.98, detalhe: "Lava Roupas Brilhante Cores 800g" },
+    "linguiça": { preco: 15.69, detalhe: "Linguiça Excelsior Churrasco 800g" }
 };
 
 function obterCategoria(produto) {
-    for (let [chave, cat] of Object.entries(mapaCategorias)) {
-        if (produto.toLowerCase().includes(chave.toLowerCase())) return cat;
-    }
-    return "Outros";
+    return mapaCategorias[produto] || "Outros";
 }
 
-// ========== DADOS INICIAIS ==========
-let gabaritoCustomizado = JSON.parse(localStorage.getItem("gabarito_custom")) || [
-    "Arroz", "Feijão", "Macarrão", "Açúcar", "Óleo", "Sal", "Café", "Leite", "Ovos", "Frango", "Carne", "Pão", "Queijo", "Presunto", "Batata", "Cebola", "Tomate", "Alho", "Banana", "Maçã", "Papel higiênico", "Amaciante", "Sabão em pó", "Detergente"
-];
+const itensPadrao = Object.keys(mapaCategorias);
+
+let gabaritoCustomizado = JSON.parse(localStorage.getItem("gabarito_custom")) || itensPadrao;
 let compras = JSON.parse(localStorage.getItem("compras_v3")) || [];
 let abaAtual = "gabarito";
 let grafico;
 let html5QrcodeScanner = null;
 
-// ========== MERCADOS DE SANTA CRUZ DO SUL ==========
-let promocoesPorMercado = JSON.parse(localStorage.getItem("promocoes_mercados")) || {
-    "Passarela": {},
-    "Tischler": {},
-    "Miller": {},
-    "Nacional": {},
-    "Zaffari": {}
-};
+const paginaGabarito = document.getElementById("paginaGabarito");
+const paginaCarrinho = document.getElementById("paginaCarrinho");
+const paginaHistorico = document.getElementById("paginaHistorico");
+const produtoHistorico = document.getElementById("produtoHistorico");
 
-let mercadoAtualSelecionado = "Passarela";
-
-function salvarPromocoes() {
-    localStorage.setItem("promocoes_mercados", JSON.stringify(promocoesPorMercado));
-}
-
-// ========== SIMULAÇÃO DE PREÇOS DOS MERCADOS ==========
-// Como os sites bloqueiam scraping, vamos usar dados realistas dos mercados de Santa Cruz
-const precosRealistas = {
-    "Passarela": {
-        "arroz": 5.99, "feijão": 8.49, "macarrão": 4.29, "açúcar": 4.19, "óleo": 6.79, "sal": 1.29,
-        "café": 12.99, "leite": 4.89, "ovos": 11.99, "frango": 14.90, "carne": 32.90, "pão": 0.89,
-        "queijo": 28.90, "presunto": 19.90, "batata": 3.99, "cebola": 4.49, "tomate": 5.99, "alho": 8.99,
-        "banana": 4.29, "maçã": 7.49, "papel higiênico": 12.90, "amaciante": 15.90, "sabão em pó": 18.90, "detergente": 2.49
-    },
-    "Tischler": {
-        "arroz": 5.79, "feijão": 7.99, "macarrão": 3.99, "açúcar": 3.99, "óleo": 6.49, "sal": 1.19,
-        "café": 11.99, "leite": 4.59, "ovos": 10.99, "frango": 13.90, "carne": 29.90, "pão": 0.85,
-        "queijo": 26.90, "presunto": 18.90, "batata": 3.49, "cebola": 3.99, "tomate": 5.49, "alho": 7.99,
-        "banana": 3.99, "maçã": 6.99, "papel higiênico": 11.90, "amaciante": 14.90, "sabão em pó": 17.90, "detergente": 2.29
-    },
-    "Miller": {
-        "arroz": 6.29, "feijão": 8.99, "macarrão": 4.59, "açúcar": 4.49, "óleo": 7.29, "sal": 1.39,
-        "café": 13.99, "leite": 5.29, "ovos": 12.99, "frango": 15.90, "carne": 34.90, "pão": 0.95,
-        "queijo": 29.90, "presunto": 20.90, "batata": 4.49, "cebola": 4.99, "tomate": 6.49, "alho": 9.99,
-        "banana": 4.79, "maçã": 7.99, "papel higiênico": 13.90, "amaciante": 16.90, "sabão em pó": 19.90, "detergente": 2.69
-    },
-    "Nacional": {
-        "arroz": 5.49, "feijão": 7.49, "macarrão": 3.69, "açúcar": 3.69, "óleo": 5.99, "sal": 1.09,
-        "café": 10.99, "leite": 4.29, "ovos": 9.99, "frango": 12.90, "carne": 27.90, "pão": 0.79,
-        "queijo": 24.90, "presunto": 16.90, "batata": 2.99, "cebola": 3.49, "tomate": 4.99, "alho": 6.99,
-        "banana": 3.49, "maçã": 5.99, "papel higiênico": 10.90, "amaciante": 13.90, "sabão em pó": 16.90, "detergente": 1.99
-    },
-    "Zaffari": {
-        "arroz": 6.59, "feijão": 9.49, "macarrão": 4.89, "açúcar": 4.79, "óleo": 7.59, "sal": 1.49,
-        "café": 14.99, "leite": 5.59, "ovos": 13.99, "frango": 16.90, "carne": 36.90, "pão": 1.09,
-        "queijo": 31.90, "presunto": 22.90, "batata": 4.99, "cebola": 5.49, "tomate": 6.99, "alho": 10.99,
-        "banana": 5.29, "maçã": 8.99, "papel higiênico": 14.90, "amaciante": 17.90, "sabão em pó": 21.90, "detergente": 2.89
-    }
-};
-
-// ========== BUSCA AUTOMÁTICA DE OFERTAS ==========
-function mostrarProgresso(mostrar, texto, percentual) {
-    const div = document.getElementById("progresso");
-    if (mostrar) {
-        div.style.display = "block";
-        if (texto) document.getElementById("progressoTexto").innerText = texto;
-        if (percentual !== undefined) document.getElementById("progressoBarra").style.width = percentual + "%";
-    } else {
-        div.style.display = "none";
-    }
-}
-
-async function buscarTodasOfertasAutomatico() {
-    mostrarProgresso(true, "Iniciando busca de ofertas...", 0);
-    
-    // Pegar produtos da lista
-    const produtosAtivos = compras.filter(item => item.noCarrinho && !item.comprado).map(item => item.produto);
-    if (produtosAtivos.length === 0) {
-        mostrarProgresso(false);
-        alert("Adicione produtos na lista primeiro!");
-        return;
-    }
-    
-    const produtosUnicos = [...new Set(produtosAtivos)];
-    let total = produtosUnicos.length;
-    let concluidos = 0;
-    
-    for (const produto of produtosUnicos) {
-        const produtoKey = produto.toLowerCase();
-        mostrarProgresso(true, `Buscando: ${produto}...`, (concluidos / total) * 100);
-        
-        for (const [mercado, precos] of Object.entries(precosRealistas)) {
-            let precoEncontrado = null;
-            
-            // Buscar preço exato ou similar
-            if (precos[produtoKey]) {
-                precoEncontrado = precos[produtoKey];
-            } else {
-                // Tentar correspondência parcial
-                for (let [key, valor] of Object.entries(precos)) {
-                    if (produtoKey.includes(key) || key.includes(produtoKey)) {
-                        precoEncontrado = valor;
-                        break;
-                    }
-                }
-            }
-            
-            if (precoEncontrado) {
-                if (!promocoesPorMercado[mercado]) promocoesPorMercado[mercado] = {};
-                promocoesPorMercado[mercado][produtoKey] = {
-                    preco: precoEncontrado,
-                    detalhe: `Oferta de ${new Date().toLocaleDateString()}`,
-                    ultimaAtualizacao: new Date().toISOString(),
-                    automatico: true
-                };
-            }
-        }
-        
-        concluidos++;
-        await new Promise(r => setTimeout(r, 100));
-    }
-    
-    salvarPromocoes();
-    localStorage.setItem("ultimaBuscaAuto", Date.now().toString());
-    mostrarProgresso(false);
-    carregar();
-    alert(`Busca concluída! ${total} produtos atualizados.`);
-}
-
-// ========== GERENCIAR PROMOÇÕES ==========
-function abrirGerenciarPromocoes() {
-    const modal = document.createElement("div");
-    modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;justify-content:center;align-items:center;";
-    modal.innerHTML = `
-        <div style="background:white;border-radius:16px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;padding:20px;">
-            <div style="display:flex;justify-content:space-between;">
-                <h3>🏷️ Gerenciar Ofertas</h3>
-                <button onclick="this.closest('div').parentElement.remove()" style="background:none;border:none;font-size:24px;">&times;</button>
-            </div>
-            <select id="selectMercadoModal" style="width:100%;padding:10px;margin:15px 0;border-radius:8px;">
-                ${Object.keys(promocoesPorMercado).map(m => `<option value="${m}">${m}</option>`).join('')}
-            </select>
-            <div style="display:flex;gap:10px;margin-bottom:15px;">
-                <input type="text" id="produtoPromocao" placeholder="Produto" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;">
-                <input type="number" id="precoPromocao" step="0.01" placeholder="Preço" style="width:100px;padding:8px;border-radius:8px;border:1px solid #ccc;">
-                <button onclick="salvarPromocaoModal()" style="background:#2563eb;color:white;border:none;padding:8px 12px;border-radius:8px;">Salvar</button>
-            </div>
-            <div id="listaPromocoesModal"></div>
-            <button onclick="adicionarNovoMercadoModal()" style="width:100%;padding:10px;background:#64748b;color:white;border:none;border-radius:8px;margin-top:10px;">+ Novo Mercado</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    atualizarListaModal();
-    document.getElementById("selectMercadoModal").onchange = () => atualizarListaModal();
-}
-
-function atualizarListaModal() {
-    const mercado = document.getElementById("selectMercadoModal").value;
-    const promocoes = promocoesPorMercado[mercado] || {};
-    const container = document.getElementById("listaPromocoesModal");
-    if (!container) return;
-    
-    container.innerHTML = "";
-    for (let [produto, dados] of Object.entries(promocoes)) {
-        container.innerHTML += `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid #eee;">
-                <div><strong>${produto}</strong><br><small>R$ ${dados.preco.toFixed(2)}</small></div>
-                <div>
-                    <button onclick="editarPromocaoModal('${produto}')" style="background:none;color:#2563eb;border:none;cursor:pointer;">✏️</button>
-                    <button onclick="excluirPromocaoModal('${produto}')" style="background:none;color:#dc2626;border:none;cursor:pointer;">🗑️</button>
-                </div>
-            </div>
-        `;
-    }
-}
-
-function salvarPromocaoModal() {
-    const mercado = document.getElementById("selectMercadoModal").value;
-    const produto = document.getElementById("produtoPromocao").value.trim().toLowerCase();
-    const preco = parseFloat(document.getElementById("precoPromocao").value);
-    
-    if (!produto || isNaN(preco)) {
-        alert("Preencha produto e preço!");
-        return;
-    }
-    
-    if (!promocoesPorMercado[mercado]) promocoesPorMercado[mercado] = {};
-    promocoesPorMercado[mercado][produto] = { preco: preco, detalhe: "Oferta manual", ultimaAtualizacao: new Date().toISOString() };
-    salvarPromocoes();
-    
-    document.getElementById("produtoPromocao").value = "";
-    document.getElementById("precoPromocao").value = "";
-    atualizarListaModal();
-    carregar();
-    alert("Oferta salva!");
-}
-
-function editarPromocaoModal(produto) {
-    const mercado = document.getElementById("selectMercadoModal").value;
-    const dados = promocoesPorMercado[mercado][produto];
-    if (dados) {
-        document.getElementById("produtoPromocao").value = produto;
-        document.getElementById("precoPromocao").value = dados.preco;
-    }
-}
-
-function excluirPromocaoModal(produto) {
-    const mercado = document.getElementById("selectMercadoModal").value;
-    if (confirm(`Remover ${produto}?`)) {
-        delete promocoesPorMercado[mercado][produto];
-        salvarPromocoes();
-        atualizarListaModal();
-        carregar();
-    }
-}
-
-function adicionarNovoMercadoModal() {
-    const nome = prompt("Nome do novo mercado:");
-    if (nome && nome.trim()) {
-        promocoesPorMercado[nome.trim()] = {};
-        salvarPromocoes();
-        const select = document.getElementById("selectMercadoModal");
-        select.innerHTML = Object.keys(promocoesPorMercado).map(m => `<option value="${m}">${m}</option>`).join('');
-        atualizarListaModal();
-    }
-}
-
-function adicionarNovoMercado() {
-    const nome = prompt("Nome do novo mercado:");
-    if (nome && nome.trim()) {
-        promocoesPorMercado[nome.trim()] = {};
-        salvarPromocoes();
-        alert(`Mercado ${nome} adicionado!`);
-        carregar();
-    }
-}
-
-// ========== EXIBIR PROMOÇÕES NA LISTA ==========
-function obterTagsPromocao(produto, idItem = null) {
-    let html = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">';
-    const produtoKey = produto.toLowerCase();
-    
-    for (let [mercado, promocoes] of Object.entries(promocoesPorMercado)) {
-        if (promocoes[produtoKey]) {
-            const preco = promocoes[produtoKey].preco;
-            html += `<button class="tag-promocao" style="background:#16a34a;" onclick="aplicarPrecoPromocao(${idItem !== null ? idItem : 'null'}, '${produto.replace(/'/g, "\\'")}', ${preco}, '${mercado}')">
-                        🏷️ ${mercado}: R$ ${preco.toFixed(2)}
-                    </button>`;
-        }
-    }
-    
-    html += '</div>';
-    return html;
-}
-
-function aplicarPrecoPromocao(id, produto, preco, mercado) {
-    if (id !== null && id !== 'null') {
-        const idx = compras.findIndex(x => x.id == id);
-        if (idx !== -1) {
-            compras[idx].valor = preco;
-            compras[idx].mercado = mercado;
-            salvar();
-            setTimeout(() => {
-                const d = document.getElementById(`detalhes-${id}`);
-                if(d) d.classList.add("ativo");
-            }, 100);
-        }
-    } else {
-        compras.push({
-            id: Date.now() + Math.random(),
-            produto: produto,
-            quantidade: 1,
-            valor: preco,
-            mercado: mercado,
-            data: new Date().toISOString().split('T')[0],
-            comprado: false,
-            noCarrinho: true,
-            arquivado: false
-        });
-        salvar();
-        alert(`"${produto}" adicionado por R$ ${preco.toFixed(2)} no ${mercado}!`);
-    }
-}
-
-// ========== FUNÇÕES PRINCIPAIS ==========
 function alternarScanner() {
     const btn = document.getElementById("btnIniciarCamera");
+    
     if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
         html5QrcodeScanner.stop().then(() => {
             btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
-        });
+            btn.style.background = "#4f46e5";
+        }).catch(err => console.log(err));
         return;
     }
+
     btn.innerText = "🛑 Desligar Câmera";
-    if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); }
+    btn.style.background = "#ef4444";
+
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5Qrcode("reader");
+    }
+
     html5QrcodeScanner.start(
         { facingMode: "environment" }, 
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (qrCodeMessage) => {
             html5QrcodeScanner.stop().then(() => {
                 btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+                btn.style.background = "#4f46e5";
                 window.open(qrCodeMessage, '_blank');
-            });
-        }
-    ).catch(err => alert("Erro na câmera."));
+            }).catch(err => console.log(err));
+        },
+        (errorMessage) => { }
+    ).catch(err => {
+        alert("Aviso: A câmera precisa de uma conexão segura (HTTPS) ou servidor local (localhost) para rodar no celular.");
+        btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+        btn.style.background = "#4f46e5";
+    });
 }
 
 function buscarPrecoExterno(nomeProduto) {
-    window.open(`https://www.google.com/search?tbm=shop&q=${encodeURIComponent(nomeProduto)}`, '_blank');
+    const termoBusca = encodeURIComponent(nomeProduto);
+    const url = `https://www.google.com/search?tbm=shop&q=${termoBusca}`;
+    window.open(url, '_blank');
+}
+
+function obterMelhorOfertaHistorico(produto) {
+    let historicoValido = compras.filter(x => x.produto === produto && x.valor > 0 && x.comprado && x.mercado);
+    if(historicoValido.length === 0) return null;
+    let copiaHistorico = [...historicoValido];
+    copiaHistorico.sort((a, b) => a.valor - b.valor);
+    return { mercado: copiaHistorico[0].mercado, valor: copiaHistorico[0].valor };
+}
+
+function obterUltimoPrecoValido(produto) {
+    let historico = compras.filter(x => x.produto === produto && x.valor > 0 && x.comprado);
+    if(historico.length > 0) {
+        let copiaHistorico = [...historico];
+        copiaHistorico.sort((a,b) => new Date(b.data) - new Date(a.data));
+        return copiaHistorico[0].valor;
+    }
+    return 0;
 }
 
 function renderizarFavoritos() {
+    const boxSugestoes = document.getElementById("secaoSugestoes");
     const divFavs = document.getElementById("listaFavoritos");
-    if (!divFavs) return;
     divFavs.innerHTML = "";
     
     let contagem = {};
@@ -806,30 +535,51 @@ function renderizarFavoritos() {
         contagem[x.produto] = (contagem[x.produto] || 0) + 1;
     });
     
-    let ordenados = Object.keys(contagem).sort((a,b) => contagem[b] - contagem[a]).slice(0, 8);
+    let ordenados = Object.keys(contagem).filter(prod => contagem[prod] >= 2);
+    ordenados.sort((a,b) => contagem[b] - contagem[a]);
     
-    if (ordenados.length === 0) {
-        document.getElementById("secaoSugestoes").style.display = "none";
+    if(ordenados.length === 0) {
+        boxSugestoes.style.display = "none";
         return;
     }
-    if (abaAtual === "gabarito") document.getElementById("secaoSugestoes").style.display = "block";
-    
-    for (let prod of ordenados) {
+
+    if(abaAtual === "gabarito") {
+        boxSugestoes.style.display = "block";
+    }
+
+    let exibidos = 0;
+    for (let i = 0; i < ordenados.length; i++) {
+        if (exibidos >= 7) break;
+        
+        let prod = ordenados[i];
         const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
-        if (!jaAdicionado) {
+        
+        if(!jaAdicionado) {
             divFavs.innerHTML += `<div class="badge-item" onclick="adicionarAoCarrinho('${prod.replace(/'/g, "\\'")}')">➕ ${prod}</div>`;
+            exibidos++;
         }
+    }
+
+    if (exibidos === 0) {
+        boxSugestoes.style.display = "none";
     }
 }
 
 function carregar() {
     const busca = document.getElementById("busca").value.toLowerCase();
-    let pendentes = 0, comprados = 0, totalGeralItens = 0;
+    
+    let pendentes = 0;
+    let comprados = 0;
+    let totalGeralItens = 0;
 
     compras.forEach(item => {
         if (!item.arquivado && item.noCarrinho) {
             totalGeralItens++;
-            if (item.comprado) comprados++; else pendentes++;
+            if (item.comprado) {
+                comprados++;
+            } else {
+                pendentes++;
+            }
         }
     });
 
@@ -837,14 +587,11 @@ function carregar() {
     document.getElementById("qtdComprados").innerText = comprados;
     document.getElementById("qtdTotalGeral").innerText = totalGeralItens;
 
-    const paginaGabarito = document.getElementById("paginaGabarito");
-    const paginaCarrinho = document.getElementById("paginaCarrinho");
-
     if (abaAtual === "gabarito") {
         paginaGabarito.innerHTML = "";
-        let produtosFiltrados = [...new Set(gabaritoCustomizado)].sort();
-        let categoriesAtivas = {};
+        let produtosFiltrados = [...new Set(gabaritoCustomizado)].sort((a, b) => a.localeCompare(b, 'pt', { sensitivity: 'base' }));
         
+        let categoriesAtivas = {};
         produtosFiltrados.forEach(prod => {
             if (busca && !prod.toLowerCase().includes(busca)) return;
             let cat = obterCategoria(prod);
@@ -852,25 +599,29 @@ function carregar() {
             categoriesAtivas[cat].push(prod);
         });
 
-        for (let cat of Object.keys(categoriesAtivas).sort()) {
+        Object.keys(categoriesAtivas).sort().forEach(cat => {
             paginaGabarito.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
-            for (let prod of categoriesAtivas[cat]) {
+            categoriesAtivas[cat].forEach(prod => {
                 const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
-                const tags = obterTagsPromocao(prod, null);
                 
+                // Verifica promoção na aba de adição
+                let chavePromo = prod.toLowerCase().trim();
+                let infoPromo = promocoesMillerVigentes[chavePromo];
+                let tagPromoHtml = infoPromo ? `<br><span style="font-size:10px; color:#b45309; font-weight:bold;">🔥 Encarte Miller: R$ ${infoPromo.preco.toFixed(2)}</span>` : '';
+
                 paginaGabarito.innerHTML += `
                 <div class="item-card">
                     <div>
                         <h3>${prod}</h3>
-                        ${tags}
+                        ${tagPromoHtml}
                     </div>
                     <button class="btnAdicionar ${jaAdicionado ? 'ja-adicionado' : ''}" 
                             onclick="${jaAdicionado ? '' : `adicionarAoCarrinho('${prod.replace(/'/g, "\\'")}')`}">
                         ${jaAdicionado ? '✔ Na Lista' : '➕ Adicionar'}
                     </button>
                 </div>`;
-            }
-        }
+            });
+        });
     }
 
     if (abaAtual === "carrinho") {
@@ -879,7 +630,7 @@ function carregar() {
         let itensAtivos = compras.filter(x => x.noCarrinho && !x.arquivado);
 
         if(itensAtivos.length === 0) {
-            paginaCarrinho.innerHTML = `<p style="text-align:center; color:var(--cinza); padding:30px;">Sua lista está vazia.</p>`;
+            paginaCarrinho.innerHTML = `<p style="text-align:center; color:var(--cinza); padding:30px; grid-column: 1 / -1;">Sua lista atual está vazia.</p>`;
         }
 
         let categoriesCarrinho = {};
@@ -890,19 +641,32 @@ function carregar() {
             categoriesCarrinho[cat].push(item);
         });
 
-        for (let cat of Object.keys(categoriesCarrinho).sort()) {
+        Object.keys(categoriesCarrinho).sort().forEach(cat => {
             paginaCarrinho.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
-            for (let item of categoriesCarrinho[cat]) {
+            categoriesCarrinho[cat].forEach(item => {
                 const indexReal = compras.findIndex(x => x.id === item.id);
-                const tags = obterTagsPromocao(item.produto, item.id);
+                let preçoSugerido = item.valor || obterUltimoPrecoValido(item.produto);
                 
+                // Mapeamento e detecção das ofertas do Miller na aba lista atual
+                let chavePromo = item.produto.toLowerCase().trim();
+                let promocaoEncontrada = promocoesMillerVigentes[chavePromo];
+                
+                let textoOferta = "";
+                if (promocaoEncontrada) {
+                    textoOferta = `<span class="tag-promocao-miller">🔥 No Encarte Miller: R$ ${promocaoEncontrada.preco.toFixed(2)} (${promocaoEncontrada.detalhe})</span>`;
+                    if(!item.valor) preçoSugerido = promocaoEncontrada.preco;
+                } else {
+                    let melhorOferta = obterMelhorOfertaHistorico(item.produto);
+                    textoOferta = melhorOferta ? `<span class="tag-melhor-preco">🏷 Seu Histórico: R$ ${melhorOferta.valor.toFixed(2)} no ${melhorOferta.mercado}</span>` : '';
+                }
+
                 paginaCarrinho.innerHTML += `
                 <div class="item-card ${item.comprado ? 'comprado' : ''}">
                     <div class="flex-col">
                         <div class="topo-card">
                             <div>
                                 <h3 onclick="toggleDetalhesCard(${item.id})">${item.produto}</h3>
-                                ${tags}
+                                ${textoOferta}
                             </div>
                             <div style="display:flex; gap:10px; align-items:center;">
                                 <button class="btnToggleDetalhes" onclick="toggleDetalhesCard(${item.id})">⚙ Config</button>
@@ -913,7 +677,7 @@ function carregar() {
                         <div id="detalhes-${item.id}" class="detalhes-produto">
                             <div>
                                 <button class="btnBuscarNfg" onclick="buscarPrecoExterno('${item.produto.replace(/'/g, "\\'")}')">
-                                    🔍 Pesquisar Ofertas
+                                    🔍 Pesquisar Ofertas na Internet
                                 </button>
                             </div>
                             
@@ -922,7 +686,7 @@ function carregar() {
                                     <label>Status</label>
                                     <select id="statusSelect-${item.id}" onchange="alterarStatus(${indexReal}, this.value, ${item.id})">
                                         <option value="false" ${!item.comprado ? 'selected' : ''}>⚠ Falta</option>
-                                        <option value="true" ${item.comprado ? 'selected' : ''}>✔ Comprado</option>
+                                        <option value="true" ${item.comprado ? 'selected' : ''}>✔ Ok</option>
                                     </select>
                                 </div>
                                 <div class="campo">
@@ -930,27 +694,27 @@ function carregar() {
                                     <input type="number" style="width:50px;" min="1" value="${item.quantidade || 1}" onchange="alterarQuantidade(${indexReal}, this.value)">
                                 </div>
                                 <div class="campo">
-                                    <label>Preço</label>
-                                    <input type="number" style="width:70px;" step="0.01" value="${item.valor || ''}" onchange="alterarValor(${indexReal}, this.value)">
+                                    <label>Preço Unit.</label>
+                                    <input type="number" style="width:70px;" step="0.01" placeholder="${preçoSugerido ? preçoSugerido.toFixed(2) : '0,00'}" value="${item.valor || ''}" onchange="alterarValor(${indexReal}, this.value)">
                                 </div>
                                 <div class="campo">
                                     <label>Mercado</label>
-                                    <input type="text" style="width:100px;" value="${item.mercado || ''}" onchange="alterarMercado(${indexReal}, this.value)">
+                                    <input type="text" style="width:100px;" placeholder="Ex: Atacadão" value="${item.mercado || ''}" onchange="alterarMercado(${indexReal}, this.value)">
                                 </div>
                                 <div class="campo">
                                     <label>Data</label>
                                     <input type="date" style="width:110px;" value="${item.data || ''}" onchange="alterarData(${indexReal}, this.value)">
                                 </div>
-                                <div class="campo">
-                                    <label>Total</label>
+                                <div class="campo" style="margin-left:auto; text-align:right;">
+                                    <label>Subtotal</label>
                                     <div class="valor-total">R$ ${((item.valor || 0) * (item.quantidade || 1)).toFixed(2)}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>`;
-            }
-        }
+            });
+        });
     }
 
     renderizarFavoritos();
@@ -966,7 +730,9 @@ function cadastrarNovoProdutoGeral() {
     const inputBusca = document.getElementById("busca");
     const nomeNovo = inputBusca.value.trim();
     if (!nomeNovo) return;
-    if (!gabaritoCustomizado.some(x => x.toLowerCase() === nomeNovo.toLowerCase())) {
+
+    const existe = gabaritoCustomizado.some(x => x.toLowerCase() === nomeNovo.toLowerCase());
+    if (!existe) {
         gabaritoCustomizado.push(nomeNovo);
         localStorage.setItem("gabarito_custom", JSON.stringify(gabaritoCustomizado));
     }
@@ -976,12 +742,24 @@ function cadastrarNovoProdutoGeral() {
 }
 
 function adicionarAoCarrinho(nomeProduto) {
+    let chavePromo = nomeProduto.toLowerCase().trim();
+    let promocaoEncontrada = promocoesMillerVigentes[chavePromo];
+    
+    // Configura os valores iniciais de forma automática se houver promoção ativa
+    let valorInicial = 0;
+    let mercadoInicial = "";
+    
+    if (promocaoEncontrada) {
+        valorInicial = promocaoEncontrada.preco;
+        mercadoInicial = "Miller (Promoção)";
+    }
+
     compras.push({
         id: Date.now() + Math.random(),
         produto: nomeProduto,
         quantidade: 1,
-        valor: 0,
-        mercado: "",
+        valor: valorInicial,
+        mercado: mercadoInicial,
         data: new Date().toISOString().split('T')[0],
         comprado: false,
         noCarrinho: true,
@@ -991,8 +769,11 @@ function adicionarAoCarrinho(nomeProduto) {
 }
 
 function removerDoCarrinho(index) {
-    if(compras[index].valor === 0) compras.splice(index, 1); 
-    else compras[index].noCarrinho = false;
+    if(compras[index].valor === 0) {
+        compras.splice(index, 1);
+    } else {
+        compras[index].noCarrinho = false;
+    }
     salvar();
 }
 
@@ -1003,25 +784,30 @@ function mudarAba(aba) {
     document.getElementById("btnAbaHistorico").classList.remove("ativo");
     document.getElementById("btnVirarMes").classList.add("oculto");
     document.getElementById("secaoScanner").classList.add("oculto");
-    document.getElementById("paginaGabarito").classList.add("oculto");
-    document.getElementById("paginaCarrinho").classList.add("oculto");
-    document.getElementById("paginaHistorico").classList.add("oculto");
+
+    paginaGabarito.classList.add("oculto");
+    paginaCarrinho.classList.add("oculto");
+    paginaHistorico.classList.add("oculto");
 
     if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
-        html5QrcodeScanner.stop();
+        html5QrcodeScanner.stop().then(() => {
+            const btn = document.getElementById("btnIniciarCamera");
+            btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+            btn.style.background = "#4f46e5";
+        }).catch(err => console.log(err));
     }
 
     if (aba === "gabarito") {
         document.getElementById("btnAbaGabarito").classList.add("ativo");
-        document.getElementById("paginaGabarito").classList.remove("oculto");
+        paginaGabarito.classList.remove("oculto");
     } else if (aba === "carrinho") {
         document.getElementById("btnAbaCarrinho").classList.add("ativo");
-        document.getElementById("paginaCarrinho").classList.remove("oculto");
+        paginaCarrinho.classList.remove("oculto");
         document.getElementById("btnVirarMes").classList.remove("oculto");
-        document.getElementById("secaoScanner").classList.remove("oculto");
+        document.getElementById("secaoScanner").classList.remove("oculto"); 
     } else if (aba === "historico") {
         document.getElementById("btnAbaHistorico").classList.add("ativo");
-        document.getElementById("paginaHistorico").classList.remove("oculto");
+        paginaHistorico.classList.remove("oculto");
         atualizarGrafico();
     }
     carregar();
@@ -1029,9 +815,11 @@ function mudarAba(aba) {
 
 function alterarStatus(index, val, idElemento) { 
     if (val === "true" && (!compras[index].valor || compras[index].valor <= 0)) {
-        alert(`Digite o preço antes de marcar como comprado.`);
+        alert(`Digite o preço de "${compras[index].produto}" antes de marcar como comprado.`);
         const select = document.getElementById(`statusSelect-${idElemento}`);
         if(select) select.value = "false";
+        const detalhes = document.getElementById(`detalhes-${idElemento}`);
+        if(detalhes) detalhes.classList.add("ativo");
         return;
     }
     compras[index].comprado = (val === "true"); 
@@ -1049,70 +837,92 @@ function salvar() {
 }
 
 function carregarFiltroProdutosGrafico(){
-    let produtosComPreco = [...new Set(compras.filter(x => x.valor > 0).map(x => x.produto))].sort();
-    let produtoHistorico = document.getElementById("produtoHistorico");
+    let UrbanPr = [...new Set(compras.filter(x => x.valor > 0).map(x => x.produto))].sort();
     let anterior = produtoHistorico.value;
     produtoHistorico.innerHTML = "";
-    if(produtosComPreco.length === 0) {
-        produtoHistorico.innerHTML = "<option>Nenhum histórico</option>";
+    if(UrbanPr.length === 0) {
+        produtoHistorico.innerHTML = "<option>Nenhum histórico disponível</option>";
         return;
     }
-    produtosComPreco.forEach(prod => { produtoHistorico.innerHTML += `<option value="${prod}">${prod}</option>`; });
-    if(anterior && produtosComPreco.includes(anterior)) produtoHistorico.value = anterior;
+    UrbanPr.forEach(prod => {
+        produtoHistorico.innerHTML += `<option value="${prod}">${prod}</option>`;
+    });
+    if(anterior && UrbanPr.includes(anterior)) {
+        produtoHistorico.value = anterior;
+    }
 }
 
-document.getElementById("produtoHistorico")?.addEventListener("change", atualizarGrafico);
+produtoHistorico.addEventListener("change", atualizarGrafico);
 
 function atualizarGrafico(){
-    let prod = document.getElementById("produtoHistorico").value;
+    let prod = produtoHistorico.value;
     let dados = compras.filter(x => x.produto === prod && x.valor > 0 && x.data).sort((a,b) => new Date(a.data) - new Date(b.data));
+
     if(dados.length === 0) {
-        if(grafico) grafico.destroy();
         document.getElementById("menorPreco").innerText = "R$ 0,00";
         document.getElementById("maiorPreco").innerText = "R$ 0,00";
         document.getElementById("ultimoPreco").innerText = "R$ 0,00";
+        if(grafico) grafico.destroy();
         return;
     }
+
     let labels = dados.map(x => {
         let p = x.data.split('-');
-        return x.mercado ? `${p[2]}/${p[1]} (${x.mercado})` : `${p[2]}/${p[1]}`;
+        let dataFormatada = p.length === 3 ? `${p[2]}/${p[1]}` : x.data;
+        return x.mercado ? `${dataFormatada} (${x.mercado})` : dataFormatada;
     });
     let valores = dados.map(x => x.valor);
+
     if(grafico) grafico.destroy();
+
     grafico = new Chart(document.getElementById("grafico"), {
         type: 'line',
-        data: { labels, datasets: [{ label: 'Preço', data: valores, borderColor: '#2563eb', fill: false }] }
+        data: {
+            labels,
+            datasets: [{
+                label: 'Preço por Mercado',
+                data: valores,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                fill: true,
+                tension: 0.1
+            }]
+        }
     });
-    
+
     let menorItem = [...dados].sort((a,b) => a.valor - b.valor)[0];
     let maiorItem = [...dados].sort((a,b) => b.valor - a.valor)[0];
     let ultimoItem = dados[dados.length - 1];
+
     document.getElementById("menorPreco").innerText = `R$ ${menorItem.valor.toFixed(2)} (${menorItem.mercado || '?'})`;
-    document.getElementById("maiorPreco").innerText = `R$ ${maiorItem.valor.toFixed(2)} (${maiorItem.mercado || '?'})`;
+    document.getElementById("maiorPreco").innerText = `R$ ${maiorItem.maiorItem || maiorItem.valor.toFixed(2)} (${maiorItem.mercado || '?'})`;
     document.getElementById("ultimoPreco").innerText = `R$ ${ultimoItem.valor.toFixed(2)} (${ultimoItem.mercado || '?'})`;
 }
 
 function novoMes(){
-    if(!confirm("Fechar o mês? Itens comprados vão para o histórico.")) return;
+    if(!confirm("Deseja encerrar e limpar a lista ativa atual? Os preços continuarão salvos nos gráficos.")) return;
     compras.forEach(item => {
         if(item.noCarrinho && !item.arquivado) {
-            if(item.comprado && item.valor > 0) item.arquivado = true; 
-            else item.noCarrinho = false;
+            if(item.comprado && item.valor > 0) {
+                item.arquivado = true;
+            } else {
+                item.noCarrinho = false;
+            }
         }
     });
     salvar();
+    mudarAba("gabarito");
 }
 
 function exportarDados() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ 
-        gabarito: gabaritoCustomizado, 
-        compras: compras, 
-        promocoes: promocoesPorMercado 
-    }));
-    const dl = document.createElement('a');
-    dl.setAttribute("href", dataStr);
-    dl.setAttribute("download", `backup_${new Date().toISOString().split('T')[0]}.json`);
-    dl.click();
+    const dados = { gabarito: gabaritoCustomizado, compras: compras };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dados));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `backup_compras.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
 }
 
 function importarDados() {
@@ -1123,22 +933,27 @@ function importarDados() {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.readAsText(file,'UTF-8');
-        reader.onload = re => {
-            let d = JSON.parse(re.target.result);
-            if(d.compras) compras = d.compras;
-            if(d.gabarito) gabaritoCustomizado = d.gabarito;
-            if(d.promocoes) promocoesPorMercado = d.promocoes;
-            salvarPromocoes();
-            salvar();
-            alert("Backup importado!");
-            location.reload();
+        reader.onload = readerEvent => {
+            try {
+                const dadosImportados = JSON.parse(readerEvent.target.result);
+                if(dadosImportados.compras) {
+                    gabaritoCustomizado = dadosImportados.gabarito || itensPadrao;
+                    compras = dadosImportados.compras;
+                    localStorage.setItem("gabarito_custom", JSON.stringify(gabaritoCustomizado));
+                    localStorage.setItem("compras_v3", JSON.stringify(compras));
+                    carregar();
+                    alert("Backup restaurado!");
+                }
+            } catch(err) { alert("Erro ao importar."); }
         }
-    };
+    }
     input.click();
 }
 
-// Inicializar
+// Inicialização correta
 carregar();
+carregarFiltroProdutosGrafico();
 </script>
+
 </body>
 </html>
