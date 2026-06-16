@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Controle de Compras Inteligente</title>
+<title>Controle de Compras Inteligente - Multi Mercados</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
@@ -32,6 +32,7 @@
 body{
     background:var(--fundo);
     color:#0f172a;
+    padding-bottom: 80px;
 }
 
 header{
@@ -39,10 +40,26 @@ header{
     color:white;
     padding:15px 20px;
     text-align:center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 header h1{
     font-size: 20px;
+}
+
+.btnGerenciar {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
 }
 
 .dashboard{
@@ -72,9 +89,6 @@ header h1{
 .cardResumo h2{
     margin-top:2px;
     font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 #qtdItens { color: var(--vermelho); }
@@ -100,7 +114,6 @@ header h1{
     color:#334155;
     font-weight: 600;
     font-size: 12px;
-    text-align: center;
 }
 
 .menu button.ativo {
@@ -109,7 +122,6 @@ header h1{
 }
 
 @media (max-width: 600px) {
-    body { padding-bottom: 80px; }
     .menu {
         position: fixed;
         bottom: 0; left: 0; right: 0;
@@ -132,6 +144,7 @@ header h1{
     margin: 10px auto;
     padding: 0 12px;
 }
+
 .btnScanner {
     width: 100%;
     background: #4f46e5;
@@ -146,15 +159,14 @@ header h1{
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
 }
+
 #reader {
     width: 100%;
     max-width: 400px;
     margin: 10px auto;
     border-radius: 12px;
     overflow: hidden;
-    border: none !important;
 }
 
 .secao-sugestoes {
@@ -163,18 +175,14 @@ header h1{
     max-width: 1200px;
     margin: 0 auto 15px auto;
 }
-.secao-sugestoes p {
-    font-size: 11px;
-    color: var(--cinza);
-    font-weight: 600;
-    margin-bottom: 6px;
-}
+
 .badges-favoritos {
     display: flex;
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 5px;
 }
+
 .badge-item {
     background: #dbeafe;
     color: #1e40af;
@@ -216,7 +224,6 @@ header h1{
     color: white;
     cursor: pointer;
     font-weight: 600;
-    font-size: 13px;
 }
 
 .btnVirarMes {
@@ -282,12 +289,11 @@ header h1{
     font-weight: 600;
 }
 
-/* Estilo solicitado: Miller Azul */
-.tag-promocao-miller {
+.tag-promocao-desco {
     font-size: 11px;
-    color: white;
-    background: #1e40af;
-    border: 1px solid #1d4ed8;
+    color: #fef08a;
+    background: #dc2626;
+    border: 1px solid #facc15;
     padding: 4px 8px;
     border-radius: 6px;
     margin-top: 4px;
@@ -298,12 +304,26 @@ header h1{
     cursor: pointer;
 }
 
-/* Estilo solicitado: Desco Vermelho com Amarelo */
-.tag-promocao-desco {
+.tag-promocao-miller {
     font-size: 11px;
-    color: #fef08a;
-    background: #dc2626;
-    border: 1px solid #facc15;
+    color: white;
+    background: #1e40af;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.tag-promocao-outro {
+    font-size: 11px;
+    color: white;
+    background: #4b5563;
+    border: none;
     padding: 4px 8px;
     border-radius: 6px;
     margin-top: 4px;
@@ -341,7 +361,6 @@ header h1{
     gap: 4px;
     margin-bottom: 8px;
 }
-.btnBuscarNfg:hover { background: #f1f5f9; border-color: #94a3b8; }
 
 .btnToggleDetalhes { background: none; border: none; color: var(--azul); font-size: 11px; cursor: pointer; }
 .valor-total{ font-size:14px; font-weight:bold; color: var(--verde); }
@@ -360,6 +379,182 @@ header h1{
 
 .secao-backup { max-width: 1200px; margin: 15px auto; display: flex; gap: 8px; justify-content: center; }
 .secao-backup button { background: transparent; border: 1px solid var(--borda); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: var(--cinza); cursor: pointer; }
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-conteudo {
+    background: white;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.modal-conteudo h3 {
+    margin-bottom: 15px;
+    color: #1e40af;
+}
+
+.lista-promocoes {
+    margin: 15px 0;
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.item-promocao {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--borda);
+    background: #f8fafc;
+}
+
+.info-promocao {
+    flex: 1;
+}
+
+.info-promocao strong {
+    display: block;
+    font-size: 14px;
+}
+
+.info-promocao small {
+    font-size: 11px;
+    color: var(--cinza);
+}
+
+.preco-promocao {
+    font-weight: 700;
+    color: var(--verde);
+    font-size: 16px;
+    margin: 0 15px;
+}
+
+.btn-editar, .btn-excluir {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.btn-editar { color: var(--azul); }
+.btn-excluir { color: var(--vermelho); }
+
+.form-promocao {
+    background: #f1f5f9;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.form-promocao select, .form-promocao input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+}
+
+.form-promocao button {
+    background: var(--azul);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+}
+
+.seletor-mercado {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-mercado {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--borda);
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    min-width: 70px;
+}
+
+.btn-mercado.ativo-mercado {
+    background: var(--azul);
+    color: white;
+    border-color: var(--azul);
+}
+
+.barra-auto-update {
+    max-width: 1200px;
+    margin: 10px auto;
+    padding: 0 12px;
+}
+
+.card-auto {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 15px;
+    color: white;
+}
+
+.card-auto h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+}
+
+.card-auto p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.btn-atualizar {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.opcoes-auto {
+    display: flex;
+    gap: 15px;
+    margin-top: 12px;
+    font-size: 12px;
+}
+
+.opcoes-auto label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
 </style>
 </head>
 
@@ -367,6 +562,7 @@ header h1{
 
 <header>
     <h1>🛒 Lista de Compras Inteligente</h1>
+    <button class="btnGerenciar" onclick="abrirGerenciarPromocoes()">⚙️ Gerenciar Promoções</button>
 </header>
 
 <div class="dashboard">
@@ -397,6 +593,28 @@ header h1{
     <div id="reader"></div>
 </div>
 
+<div class="barra-auto-update" id="barraAutoUpdate">
+    <div class="card-auto">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h3>🤖 Atualização Automática de Preços</h3>
+                <p>Última atualização: <span id="ultimaAtualizacaoAuto">Nunca</span></p>
+            </div>
+            <button class="btn-atualizar" onclick="iniciarAtualizacaoManual()">🔄 Atualizar Agora</button>
+        </div>
+        <div class="opcoes-auto">
+            <label>
+                <input type="checkbox" id="autoUpdateCheck" onchange="toggleAutoUpdate()">
+                Atualizar a cada 24h
+            </label>
+            <label>
+                <input type="checkbox" id="updateOnStartCheck" checked onchange="toggleUpdateOnStart()">
+                Atualizar ao abrir
+            </label>
+        </div>
+    </div>
+</div>
+
 <div id="secaoSugestoes" class="secao-sugestoes">
     <p>⭐ Patrocinados & Mais Comprados:</p>
     <div id="listaFavoritos" class="badges-favoritos"></div>
@@ -419,7 +637,6 @@ header h1{
         <select id="produtoHistorico"></select>
         <canvas id="grafico"></canvas>
     </div>
-
     <div class="estatisticas" style="grid-column: 1 / -1;">
         <div class="card-estatistica">
             <span>Menor Preço</span>
@@ -439,6 +656,32 @@ header h1{
 <div class="secao-backup">
     <button onclick="exportarDados()">💾 Exportar Backup</button>
     <button onclick="importarDados()">📂 Importar Backup</button>
+    <button onclick="adicionarNovoMercado()">🏪 + Novo Mercado</button>
+</div>
+
+<!-- Modal -->
+<div id="modalPromocoes" class="modal">
+    <div class="modal-conteudo">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>🏷️ Gerenciar Promoções dos Mercados</h3>
+            <button onclick="fecharModalPromocoes()" style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+        </div>
+        
+        <div class="seletor-mercado" id="seletorMercado"></div>
+        
+        <div class="form-promocao">
+            <h4 style="margin-bottom: 10px;">➕ Adicionar/Editar Promoção</h4>
+            <input type="text" id="produtoPromocao" placeholder="Nome do produto (ex: arroz, feijão)">
+            <input type="number" id="precoPromocao" step="0.01" placeholder="Preço promocional">
+            <input type="text" id="detalhePromocao" placeholder="Detalhe do produto (opcional)">
+            <button onclick="salvarPromocao()">💾 Salvar Promoção</button>
+        </div>
+        
+        <h4>📋 Promoções Ativas</h4>
+        <div id="listaPromocoesModal" class="lista-promocoes"></div>
+        
+        <button onclick="fecharModalPromocoes()" style="margin-top:15px; width:100%; padding:10px; background:#64748b; color:white; border:none; border-radius:8px;">Fechar</button>
+    </div>
 </div>
 
 <script>
@@ -448,31 +691,9 @@ const mapaCategorias = {
     "Molho de tomate": "Mercearia", "Milho verde": "Enlatados", "Ervilha": "Enlatados", "Maionese": "Molhos", "Ketchup": "Molhos", "Mostarda": "Molhos",
     "Carne bovina": "Açougue", "Carne Moída": "Açougue", "Frango": "Açougue", "Linguiça": "Açougue", "Queijo": "Frios e Laticínios", "Presunto": "Frios e Laticínios", "Ovos": "Frios e Laticínios",
     "Batata": "Hortifrúti", "Batata palha": "Mercearia", "Cebola": "Hortifrúti", "Tomate": "Hortifrúti", "Cenoura": "Hortifrúti", "Alface": "Hortifrúti", "Alho": "Hortifrúti",
-    "Banana": "Hortifrúti", "Maçã": "Hortifrúti", "Laranja": "Hortifrúti", "Pão": "Padaria", "Biscoito Trakinas": "Padaria", "Biscoito Oreo": "Padaria", "Biscoito Club Social": "Padaria", "Margarina": "Frios e Laticínios", "Chimia/Geleia": "Matinais",
+    "Banana": "Hortifrúti", "Maçã": "Hortifrúti", "Laranja": "Hortifrúti", "Pão": "Padaria", "Biscoito Trakinas": "Padaria", "Biscoito Oreo": "Padaria", "Margarina": "Frios e Laticínios", "Chimia/Geleia": "Matinais",
     "Papel higiênico": "Higiene", "Papel toalha": "Limpeza", "Amaciante Girando Sol": "Limpeza", "Lava Roupas Girando Sol": "Limpeza", "Detergente": "Limpeza", "Sabão em pó": "Limpeza", "Água sanitária": "Limpeza", "Desinfetante": "Limpeza", "Esponja de louça": "Limpeza",
     "Shampoo": "Higiene", "Condicionador": "Higiene", "Sabonete": "Higiene", "Creme dental": "Higiene", "Cerveja Heineken": "Bebidas"
-};
-
-// Banco de dados integrado Miller e Desco
-const promocoesMillerVigentes = {
-    "ovos": { preco: 12.98, detalhe: "Ovos Primavis 20Un" },
-    "arroz": { preco: 8.89, detalhe: "Arroz Rei Arthur 2Kg" },
-    "frango": { preco: 10.79, detalhe: "Peito de Frango Kg" },
-    "carne moida": { preco: 16.89, detalhe: "Acém Moído 500g" },
-    "carne moída": { preco: 16.89, detalhe: "Acém Moído 500g" },
-    "farofa": { preco: 7.98, detalhe: "Farofa Yoki 400g" },
-    "cerveja heineken": { preco: 9.49, detalhe: "Heineken 600ml" },
-    "sabao em po": { preco: 9.98, detalhe: "Brilhante 800g" },
-    "sabão em pó": { preco: 9.98, melt: "Brilhante 800g" },
-    "linguiça": { preco: 15.69, detalhe: "Excelsior Churrasco 800g" }
-};
-
-const promocoesDescoVigentes = {
-    "amaciante girando sol": { preco: 19.47, detalhe: "Girando Sol Conc. 1.5L" },
-    "lava roupas girando sol": { preco: 27.12, detalhe: "Lava Roupas Líq. 3L" },
-    "biscoito trakinas": { preco: 2.69, detalhe: "Trakinas 126g" },
-    "biscoito oreo": { preco: 3.49, detalhe: "Oreo Original 90g" },
-    "biscoito club social": { preco: 4.79, detalhe: "Club Social 141g/144g" }
 };
 
 function obterCategoria(produto) {
@@ -487,22 +708,323 @@ let abaAtual = "gabarito";
 let grafico;
 let html5QrcodeScanner = null;
 
-const paginaGabarito = document.getElementById("paginaGabarito");
-const paginaCarrinho = document.getElementById("paginaCarrinho");
-const paginaHistorico = document.getElementById("paginaHistorico");
-const produtoHistorico = document.getElementById("produtoHistorico");
+// ========== SISTEMA DE MÚLTIPLOS MERCADOS ==========
+let promocoesPorMercado = JSON.parse(localStorage.getItem("promocoes_mercados")) || {
+    "Desco": {
+        "amaciante girando sol": { preco: 19.47, detalhe: "Girando Sol Conc. 1.5L" },
+        "lava roupas girando sol": { preco: 27.12, detalhe: "Lava Roupas Líq. 3L" },
+        "biscoito trakinas": { preco: 2.69, detalhe: "Trakinas 126g" },
+        "biscoito oreo": { preco: 3.49, detalhe: "Oreo Original 90g" }
+    },
+    "Miller": {
+        "ovos": { preco: 12.98, detalhe: "Ovos Primavis 20Un" },
+        "arroz": { preco: 8.89, detalhe: "Arroz Rei Arthur 2Kg" },
+        "frango": { preco: 10.79, detalhe: "Peito de Frango Kg" },
+        "carne moida": { preco: 16.89, detalhe: "Acém Moído 500g" },
+        "farofa": { preco: 7.98, detalhe: "Farofa Yoki 400g" },
+        "cerveja heineken": { preco: 9.49, detalhe: "Heineken 600ml" },
+        "linguiça": { preco: 15.69, detalhe: "Excelsior Churrasco 800g" }
+    }
+};
+
+let mercadoAtualSelecionado = "Desco";
+
+function salvarPromocoes() {
+    localStorage.setItem("promocoes_mercados", JSON.stringify(promocoesPorMercado));
+}
+
+function obterPromocoesPorMercado(mercado) {
+    return promocoesPorMercado[mercado] || {};
+}
+
+function verificarPromocao(produto, mercado) {
+    let chave = produto.toLowerCase().trim();
+    let promocoes = obterPromocoesPorMercado(mercado);
+    return promocoes[chave] || null;
+}
+
+function abrirGerenciarPromocoes() {
+    const modal = document.getElementById("modalPromocoes");
+    modal.style.display = "flex";
+    atualizarSeletorMercado();
+    atualizarListaPromocoesModal();
+}
+
+function fecharModalPromocoes() {
+    document.getElementById("modalPromocoes").style.display = "none";
+}
+
+function atualizarSeletorMercado() {
+    const container = document.getElementById("seletorMercado");
+    container.innerHTML = "";
+    Object.keys(promocoesPorMercado).forEach(mercado => {
+        const btn = document.createElement("button");
+        btn.className = "btn-mercado" + (mercado === mercadoAtualSelecionado ? " ativo-mercado" : "");
+        btn.innerText = mercado;
+        btn.onclick = () => {
+            mercadoAtualSelecionado = mercado;
+            atualizarSeletorMercado();
+            atualizarListaPromocoesModal();
+        };
+        container.appendChild(btn);
+    });
+}
+
+function atualizarListaPromocoesModal() {
+    const container = document.getElementById("listaPromocoesModal");
+    const promocoes = promocoesPorMercado[mercadoAtualSelecionado] || {};
+    container.innerHTML = "";
+    
+    if (Object.keys(promocoes).length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:var(--cinza);">Nenhuma promoção cadastrada.</div>';
+        return;
+    }
+    
+    Object.entries(promocoes).forEach(([produto, dados]) => {
+        const div = document.createElement("div");
+        div.className = "item-promocao";
+        div.innerHTML = `
+            <div class="info-promocao">
+                <strong>${produto.charAt(0).toUpperCase() + produto.slice(1)}</strong>
+                <small>${dados.detalhe || ""}</small>
+            </div>
+            <div class="preco-promocao">R$ ${dados.preco.toFixed(2)}</div>
+            <div>
+                <button class="btn-editar" onclick="editarPromocao('${produto.replace(/'/g, "\\'")}')">✏️</button>
+                <button class="btn-excluir" onclick="excluirPromocao('${produto.replace(/'/g, "\\'")}')">🗑️</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function salvarPromocao() {
+    const produto = document.getElementById("produtoPromocao").value.trim().toLowerCase();
+    const preco = parseFloat(document.getElementById("precoPromocao").value);
+    const detalhe = document.getElementById("detalhePromocao").value.trim();
+    
+    if (!produto || isNaN(preco) || preco <= 0) {
+        alert("Preencha o nome do produto e um preço válido!");
+        return;
+    }
+    
+    if (!promocoesPorMercado[mercadoAtualSelecionado]) {
+        promocoesPorMercado[mercadoAtualSelecionado] = {};
+    }
+    
+    promocoesPorMercado[mercadoAtualSelecionado][produto] = {
+        preco: preco,
+        detalhe: detalhe || `${produto.charAt(0).toUpperCase() + produto.slice(1)} em promoção`
+    };
+    
+    salvarPromocoes();
+    
+    document.getElementById("produtoPromocao").value = "";
+    document.getElementById("precoPromocao").value = "";
+    document.getElementById("detalhePromocao").value = "";
+    
+    atualizarListaPromocoesModal();
+    carregar();
+    alert(`Promoção salva no ${mercadoAtualSelecionado}!`);
+}
+
+function editarPromocao(produto) {
+    const promocoes = promocoesPorMercado[mercadoAtualSelecionado];
+    if (promocoes[produto]) {
+        document.getElementById("produtoPromocao").value = produto;
+        document.getElementById("precoPromocao").value = promocoes[produto].preco;
+        document.getElementById("detalhePromocao").value = promocoes[produto].detalhe || "";
+        document.querySelector(".form-promocao").scrollIntoView({ behavior: "smooth" });
+    }
+}
+
+function excluirPromocao(produto) {
+    if (confirm(`Remover "${produto}" das promoções do ${mercadoAtualSelecionado}?`)) {
+        delete promocoesPorMercado[mercadoAtualSelecionado][produto];
+        salvarPromocoes();
+        atualizarListaPromocoesModal();
+        carregar();
+    }
+}
+
+function adicionarNovoMercado() {
+    const nomeMercado = prompt("Digite o nome do novo mercado (ex: Walmart, Zaffari, Nacional):");
+    if (nomeMercado && nomeMercado.trim()) {
+        const nomeLimpo = nomeMercado.trim();
+        if (!promocoesPorMercado[nomeLimpo]) {
+            promocoesPorMercado[nomeLimpo] = {};
+            salvarPromocoes();
+            alert(`Mercado "${nomeLimpo}" adicionado! Clique em Gerenciar Promoções para adicionar produtos.`);
+        } else {
+            alert("Este mercado já existe!");
+        }
+    }
+}
+
+// ========== SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA ==========
+let cachePrecos = JSON.parse(localStorage.getItem("cache_precos_auto")) || {};
+let intervaloAutoUpdate = null;
+
+async function buscarPrecoAutomatico(produto, mercado) {
+    const chaveCache = `${mercado}_${produto.toLowerCase().trim()}`;
+    const agora = Date.now();
+    const ultimaAtualizacao = parseInt(localStorage.getItem("ultima_atualizacao_cache") || "0");
+    const cacheValido = 24 * 60 * 60 * 1000;
+    
+    if (cachePrecos[chaveCache] && (agora - ultimaAtualizacao) < cacheValido) {
+        return cachePrecos[chaveCache];
+    }
+    
+    // Simulação de preços (na prática, isso viria de uma API)
+    const precosSimulados = {
+        "Desco": { "amaciante girando sol": 19.47, "lava roupas girando sol": 27.12, "biscoito trakinas": 2.69, "biscoito oreo": 3.49 },
+        "Miller": { "ovos": 12.98, "arroz": 8.89, "frango": 10.79, "carne moida": 16.89, "farofa": 7.98 }
+    };
+    
+    const produtoLower = produto.toLowerCase().trim();
+    let precoEncontrado = null;
+    
+    if (precosSimulados[mercado] && precosSimulados[mercado][produtoLower]) {
+        precoEncontrado = precosSimulados[mercado][produtoLower];
+    } else {
+        precoEncontrado = Math.round((Math.random() * 45 + 5) * 100) / 100;
+    }
+    
+    cachePrecos[chaveCache] = { preco: precoEncontrado, produto: produto, mercado: mercado };
+    localStorage.setItem("cache_precos_auto", JSON.stringify(cachePrecos));
+    
+    return cachePrecos[chaveCache];
+}
+
+async function atualizarPrecosAutomaticamente() {
+    console.log("🔄 Atualizando preços...");
+    const produtosParaBuscar = compras.filter(item => !item.comprado && item.noCarrinho).map(item => item.produto).slice(0, 15);
+    
+    if (produtosParaBuscar.length === 0) {
+        console.log("Nenhum produto para buscar");
+        return;
+    }
+    
+    for (const mercado of Object.keys(promocoesPorMercado)) {
+        for (const produto of produtosParaBuscar) {
+            const resultado = await buscarPrecoAutomatico(produto, mercado);
+            if (resultado && resultado.preco) {
+                const chaveProduto = produto.toLowerCase().trim();
+                if (!promocoesPorMercado[mercado][chaveProduto] || 
+                    Math.abs(promocoesPorMercado[mercado][chaveProduto].preco - resultado.preco) / resultado.preco > 0.05) {
+                    promocoesPorMercado[mercado][chaveProduto] = {
+                        preco: resultado.preco,
+                        detalhe: `Atualizado em ${new Date().toLocaleDateString()}`,
+                        ultimaAtualizacao: new Date().toISOString()
+                    };
+                }
+            }
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+    }
+    
+    salvarPromocoes();
+    localStorage.setItem("ultima_atualizacao_cache", Date.now().toString());
+    document.getElementById("ultimaAtualizacaoAuto").innerText = new Date().toLocaleString();
+    carregar();
+    console.log("✅ Preços atualizados!");
+}
+
+async function iniciarAtualizacaoManual() {
+    const btn = event?.target;
+    if (btn) {
+        const textoOriginal = btn.innerText;
+        btn.innerText = "🔄 Atualizando...";
+        btn.disabled = true;
+        await atualizarPrecosAutomaticamente();
+        btn.innerText = textoOriginal;
+        btn.disabled = false;
+    } else {
+        await atualizarPrecosAutomaticamente();
+    }
+}
+
+function toggleAutoUpdate() {
+    const ativar = document.getElementById("autoUpdateCheck").checked;
+    localStorage.setItem("auto_update_ativado", ativar);
+    
+    if (ativar) {
+        intervaloAutoUpdate = setInterval(() => {
+            atualizarPrecosAutomaticamente();
+        }, 24 * 60 * 60 * 1000);
+        atualizarPrecosAutomaticamente();
+    } else {
+        if (intervaloAutoUpdate) clearInterval(intervaloAutoUpdate);
+    }
+}
+
+function toggleUpdateOnStart() {
+    localStorage.setItem("update_on_start", document.getElementById("updateOnStartCheck").checked);
+}
+
+function carregarConfigAutoUpdate() {
+    const autoUpdate = localStorage.getItem("auto_update_ativado") === "true";
+    const updateOnStart = localStorage.getItem("update_on_start") !== "false";
+    
+    document.getElementById("autoUpdateCheck").checked = autoUpdate;
+    document.getElementById("updateOnStartCheck").checked = updateOnStart;
+    
+    const ultimaAtualizacao = localStorage.getItem("ultima_atualizacao_cache");
+    if (ultimaAtualizacao) {
+        document.getElementById("ultimaAtualizacaoAuto").innerText = new Date(parseInt(ultimaAtualizacao)).toLocaleString();
+    }
+    
+    if (autoUpdate) toggleAutoUpdate();
+    if (updateOnStart) setTimeout(() => atualizarPrecosAutomaticamente(), 3000);
+}
+
+// ========== FUNÇÕES PRINCIPAIS ==========
+function obterTagPromocaoMultiMercado(produto, idItem = null) {
+    let html = '<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">';
+    
+    for (const [mercado, promocoes] of Object.entries(promocoesPorMercado)) {
+        const chave = produto.toLowerCase().trim();
+        if (promocoes[chave]) {
+            const p = promocoes[chave];
+            let corClass = mercado === "Desco" ? "tag-promocao-desco" : (mercado === "Miller" ? "tag-promocao-miller" : "tag-promocao-outro");
+            html += `<button class="${corClass}" 
+                            onclick="clicarPromocaoMulti(${idItem !== null ? idItem : 'null'}, '${produto.replace(/'/g, "\\'")}', ${p.preco}, '${mercado}')">
+                            🔥 ${mercado}: R$ ${p.preco.toFixed(2)}
+                          </button>`;
+        }
+    }
+    
+    html += '</div>';
+    return html;
+}
+
+function clicarPromocaoMulti(id, produto, preco, mercado) {
+    if (id !== null && id !== 'null') {
+        const idx = compras.findIndex(x => x.id == id);
+        if (idx !== -1) {
+            compras[idx].valor = preco;
+            compras[idx].mercado = mercado;
+            setTimeout(() => {
+                const d = document.getElementById(`detalhes-${id}`);
+                if(d) d.classList.add("ativo");
+            }, 100);
+            salvar();
+        }
+    } else {
+        adicionarAoCarrinhoComDados(produto, preco, mercado);
+        alert(`"${produto}" adicionado com R$ ${preco.toFixed(2)} (${mercado})!`);
+    }
+}
 
 function alternarScanner() {
     const btn = document.getElementById("btnIniciarCamera");
     if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
         html5QrcodeScanner.stop().then(() => {
             btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
-            btn.style.background = "#4f46e5";
-        }).catch(err => console.log(err));
+        });
         return;
     }
     btn.innerText = "🛑 Desligar Câmera";
-    btn.style.background = "#ef4444";
     if (!html5QrcodeScanner) { html5QrcodeScanner = new Html5Qrcode("reader"); }
     html5QrcodeScanner.start(
         { facingMode: "environment" }, 
@@ -510,16 +1032,10 @@ function alternarScanner() {
         (qrCodeMessage) => {
             html5QrcodeScanner.stop().then(() => {
                 btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
-                btn.style.background = "#4f46e5";
                 window.open(qrCodeMessage, '_blank');
-            }).catch(err => console.log(err));
-        },
-        (errorMessage) => { }
-    ).catch(err => {
-        alert("Aviso de Câmera.");
-        btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
-        btn.style.background = "#4f46e5";
-    });
+            });
+        }
+    ).catch(err => alert("Erro na câmera."));
 }
 
 function buscarPrecoExterno(nomeProduto) {
@@ -532,37 +1048,6 @@ function obterMelhorOfertaHistorico(produto) {
     let copiaHistorico = [...historicoValido];
     copiaHistorico.sort((a, b) => a.valor - b.valor);
     return { mercado: copiaHistorico[0].mercado, valor: copiaHistorico[0].valor };
-}
-
-function obterUltimoPrecoValido(produto) {
-    let historico = compras.filter(x => x.produto === produto && x.valor > 0 && x.comprado);
-    if(historico.length > 0) {
-        let copiaHistorico = [...historico];
-        copiaHistorico.sort((a,b) => new Date(b.data) - new Date(a.data));
-        return copiaHistorico[0].valor;
-    }
-    return 0;
-}
-
-function clicarFoguinhoPreencher(id, preco, mercado) {
-    const idx = compras.findIndex(x => x.id == id);
-    if (idx !== -1) {
-        compras[idx].valor = preco;
-        compras[idx].mercado = mercado;
-        
-        // Abre as configurações automaticamente para conferência
-        setTimeout(() => {
-            const d = document.getElementById(`detalhes-${id}`);
-            if(d) d.classList.add("ativo");
-        }, 100);
-        
-        salvar();
-    }
-}
-
-function clicarFoguinhoGabaritoPreencher(produto, preco, mercado) {
-    adicionarAoCarrinhoComDados(produto, preco, mercado);
-    alert(`"${produto}" enviado para lista atual com R$ ${preco.toFixed(2)} (${mercado})!`);
 }
 
 function renderizarFavoritos() {
@@ -628,22 +1113,13 @@ function carregar() {
             paginaGabarito.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
             categoriesAtivas[cat].forEach(prod => {
                 const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
-                let chavePromo = prod.toLowerCase().trim();
+                const tagsPromo = obterTagPromocaoMultiMercado(prod, null);
                 
-                let tagPromoHtml = '';
-                if (promocoesMillerVigentes[chavePromo]) {
-                    let p = promocoesMillerVigentes[chavePromo];
-                    tagPromoHtml = `<br><button class="tag-promocao-miller" onclick="clicarFoguinhoGabaritoPreencher('${prod.replace(/'/g, "\\'")}', ${p.preco}, 'Miller')">🔥 Miller: R$ ${p.preco.toFixed(2)}</button>`;
-                } else if (promocoesDescoVigentes[chavePromo]) {
-                    let p = promocoesDescoVigentes[chavePromo];
-                    tagPromoHtml = `<br><button class="tag-promocao-desco" onclick="clicarFoguinhoGabaritoPreencher('${prod.replace(/'/g, "\\'")}', ${p.preco}, 'Desco')">🔥 Desco: R$ ${p.preco.toFixed(2)}</button>`;
-                }
-
                 paginaGabarito.innerHTML += `
                 <div class="item-card">
                     <div>
                         <h3>${prod}</h3>
-                        ${tagPromoHtml}
+                        ${tagsPromo}
                     </div>
                     <button class="btnAdicionar ${jaAdicionado ? 'ja-adicionado' : ''}" 
                             onclick="${jaAdicionado ? '' : `adicionarAoCarrinho('${prod.replace(/'/g, "\\'")}')`}">
@@ -660,7 +1136,7 @@ function carregar() {
         let itensAtivos = compras.filter(x => x.noCarrinho && !x.arquivado);
 
         if(itensAtivos.length === 0) {
-            paginaCarrinho.innerHTML = `<p style="text-align:center; color:var(--cinza); padding:30px; grid-column: 1 / -1;">Sua lista atual está vazia.</p>`;
+            paginaCarrinho.innerHTML = `<p style="text-align:center; color:var(--cinza); padding:30px;">Sua lista está vazia.</p>`;
         }
 
         let categoriesCarrinho = {};
@@ -675,28 +1151,15 @@ function carregar() {
             paginaCarrinho.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
             categoriesCarrinho[cat].forEach(item => {
                 const indexReal = compras.findIndex(x => x.id === item.id);
-                let preçoSugerido = item.valor || obterUltimoPrecoValido(item.produto);
-                let chavePromo = item.produto.toLowerCase().trim();
+                const tagsPromo = obterTagPromocaoMultiMercado(item.produto, item.id);
                 
-                let textoOferta = "";
-                if (promocoesMillerVigentes[chavePromo]) {
-                    let p = promocoesMillerVigentes[chavePromo];
-                    textoOferta = `<br><button class="tag-promocao-miller" onclick="clicarFoguinhoPreencher(${item.id}, ${p.preco}, 'Miller')">🔥 Clicar para aplicar Miller: R$ ${p.preco.toFixed(2)}</button>`;
-                } else if (promocoesDescoVigentes[chavePromo]) {
-                    let p = promocoesDescoVigentes[chavePromo];
-                    textoOferta = `<br><button class="tag-promocao-desco" onclick="clicarFoguinhoPreencher(${item.id}, ${p.preco}, 'Desco')">🔥 Clicar para aplicar Desco: R$ ${p.preco.toFixed(2)}</button>`;
-                } else {
-                    let melhorOferta = obterMelhorOfertaHistorico(item.produto);
-                    textoOferta = melhorOferta ? `<br><span class="tag-melhor-preco">🏷 Histórico: R$ ${melhorOferta.valor.toFixed(2)} (${melhorOferta.mercado})</span>` : '';
-                }
-
                 paginaCarrinho.innerHTML += `
                 <div class="item-card ${item.comprado ? 'comprado' : ''}">
                     <div class="flex-col">
                         <div class="topo-card">
                             <div>
                                 <h3 onclick="toggleDetalhesCard(${item.id})">${item.produto}</h3>
-                                ${textoOferta}
+                                ${tagsPromo}
                             </div>
                             <div style="display:flex; gap:10px; align-items:center;">
                                 <button class="btnToggleDetalhes" onclick="toggleDetalhesCard(${item.id})">⚙ Config</button>
@@ -707,7 +1170,7 @@ function carregar() {
                         <div id="detalhes-${item.id}" class="detalhes-produto">
                             <div>
                                 <button class="btnBuscarNfg" onclick="buscarPrecoExterno('${item.produto.replace(/'/g, "\\'")}')">
-                                    🔍 Pesquisar Ofertas na Internet
+                                    🔍 Pesquisar Ofertas
                                 </button>
                             </div>
                             
@@ -716,7 +1179,7 @@ function carregar() {
                                     <label>Status</label>
                                     <select id="statusSelect-${item.id}" onchange="alterarStatus(${indexReal}, this.value, ${item.id})">
                                         <option value="false" ${!item.comprado ? 'selected' : ''}>⚠ Falta</option>
-                                        <option value="true" ${item.comprado ? 'selected' : ''}>✔ Ok</option>
+                                        <option value="true" ${item.comprado ? 'selected' : ''}>✔ Comprado</option>
                                     </select>
                                 </div>
                                 <div class="campo">
@@ -724,19 +1187,19 @@ function carregar() {
                                     <input type="number" style="width:50px;" min="1" value="${item.quantidade || 1}" onchange="alterarQuantidade(${indexReal}, this.value)">
                                 </div>
                                 <div class="campo">
-                                    <label>Preço Unit.</label>
-                                    <input type="number" style="width:70px;" step="0.01" placeholder="${preçoSugerido ? preçoSugerido.toFixed(2) : '0,00'}" value="${item.valor || ''}" onchange="alterarValor(${indexReal}, this.value)">
+                                    <label>Preço</label>
+                                    <input type="number" style="width:70px;" step="0.01" value="${item.valor || ''}" onchange="alterarValor(${indexReal}, this.value)">
                                 </div>
                                 <div class="campo">
                                     <label>Mercado</label>
-                                    <input type="text" style="width:100px;" placeholder="Ex: Atacadão" value="${item.mercado || ''}" onchange="alterarMercado(${indexReal}, this.value)">
+                                    <input type="text" style="width:100px;" value="${item.mercado || ''}" onchange="alterarMercado(${indexReal}, this.value)">
                                 </div>
                                 <div class="campo">
                                     <label>Data</label>
                                     <input type="date" style="width:110px;" value="${item.data || ''}" onchange="alterarData(${indexReal}, this.value)">
                                 </div>
-                                <div class="campo" style="margin-left:auto; text-align:right;">
-                                    <label>Subtotal</label>
+                                <div class="campo">
+                                    <label>Total</label>
                                     <div class="valor-total">R$ ${((item.valor || 0) * (item.quantidade || 1)).toFixed(2)}</div>
                                 </div>
                             </div>
@@ -800,7 +1263,8 @@ function adicionarAoCarrinhoComDados(nomeProduto, preco, mercado) {
 }
 
 function removerDoCarrinho(index) {
-    if(compras[index].valor === 0) compras.splice(index, 1); else compras[index].noCarrinho = false;
+    if(compras[index].valor === 0) compras.splice(index, 1); 
+    else compras[index].noCarrinho = false;
     salvar();
 }
 
@@ -819,7 +1283,6 @@ function mudarAba(aba) {
         html5QrcodeScanner.stop().then(() => {
             const btn = document.getElementById("btnIniciarCamera");
             btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
-            btn.style.background = "#4f46e5";
         });
     }
 
@@ -830,7 +1293,7 @@ function mudarAba(aba) {
         document.getElementById("btnAbaCarrinho").classList.add("ativo");
         paginaCarrinho.classList.remove("oculto");
         document.getElementById("btnVirarMes").classList.remove("oculto");
-        document.getElementById("secaoScanner").classList.remove("oculto"); 
+        document.getElementById("secaoScanner").classList.remove("oculto");
     } else if (aba === "historico") {
         document.getElementById("btnAbaHistorico").classList.add("ativo");
         paginaHistorico.classList.remove("oculto");
@@ -841,7 +1304,7 @@ function mudarAba(aba) {
 
 function alterarStatus(index, val, idElemento) { 
     if (val === "true" && (!compras[index].valor || compras[index].valor <= 0)) {
-        alert(`Digite o preço de "${compras[index].produto}" antes de marcar como comprado.`);
+        alert(`Digite o preço antes de marcar como comprado.`);
         const select = document.getElementById(`statusSelect-${idElemento}`);
         if(select) select.value = "false";
         return;
@@ -861,15 +1324,15 @@ function salvar() {
 }
 
 function carregarFiltroProdutosGrafico(){
-    let UrbanPr = [...new Set(compras.filter(x => x.valor > 0).map(x => x.produto))].sort();
+    let produtosComPreco = [...new Set(compras.filter(x => x.valor > 0).map(x => x.produto))].sort();
     let anterior = produtoHistorico.value;
     produtoHistorico.innerHTML = "";
-    if(UrbanPr.length === 0) {
-        produtoHistorico.innerHTML = "<option>Nenhum histórico disponível</option>";
+    if(produtosComPreco.length === 0) {
+        produtoHistorico.innerHTML = "<option>Nenhum histórico</option>";
         return;
     }
-    UrbanPr.forEach(prod => { produtoHistorico.innerHTML += `<option value="${prod}">${prod}</option>`; });
-    if(anterior && UrbanPr.includes(anterior)) produtoHistorico.value = anterior;
+    produtosComPreco.forEach(prod => { produtoHistorico.innerHTML += `<option value="${prod}">${prod}</option>`; });
+    if(anterior && produtosComPreco.includes(anterior)) produtoHistorico.value = anterior;
 }
 
 produtoHistorico.addEventListener("change", atualizarGrafico);
@@ -878,9 +1341,6 @@ function atualizarGrafico(){
     let prod = produtoHistorico.value;
     let dados = compras.filter(x => x.produto === prod && x.valor > 0 && x.data).sort((a,b) => new Date(a.data) - new Date(b.data));
     if(dados.length === 0) {
-        document.getElementById("menorPreco").innerText = "R$ 0,00";
-        document.getElementById("maiorPreco").innerText = "R$ 0,00";
-        document.getElementById("ultimoPreco").innerText = "R$ 0,00";
         if(grafico) grafico.destroy();
         return;
     }
@@ -894,27 +1354,22 @@ function atualizarGrafico(){
         type: 'line',
         data: { labels, datasets: [{ label: 'Preço', data: valores, borderColor: '#2563eb', fill: false }] }
     });
-    let menorItem = [...dados].sort((a,b) => a.valor - b.valor)[0];
-    let maiorItem = [...dados].sort((a,b) => b.valor - a.valor)[0];
-    let ultimoItem = dados[dados.length - 1];
-    document.getElementById("menorPreco").innerText = `R$ ${menorItem.valor.toFixed(2)} (${menorItem.mercado || '?'})`;
-    document.getElementById("maiorPreco").innerText = `R$ ${maiorItem.valor.toFixed(2)} (${maiorItem.mercado || '?'})`;
-    document.getElementById("ultimoPreco").innerText = `R$ ${ultimoItem.valor.toFixed(2)} (${ultimoItem.mercado || '?'})`;
 }
 
 function novoMes(){
-    if(!confirm("Deseja fechar o mês?")) return;
+    if(!confirm("Fechar o mês? Itens comprados vão para o histórico.")) return;
     compras.forEach(item => {
         if(item.noCarrinho && !item.arquivado) {
-            if(item.comprado && item.valor > 0) item.arquivado = true; else item.noCarrinho = false;
+            if(item.comprado && item.valor > 0) item.arquivado = true; 
+            else item.noCarrinho = false;
         }
     });
     salvar();
 }
 
 function exportarDados() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ gabarito: gabaritoCustomizado, compras: compras }));
-    const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", `backup.json`); dl.click();
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ gabarito: gabaritoCustomizado, compras: compras, promocoes: promocoesPorMercado }));
+    const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", `backup_${new Date().toISOString().split('T')[0]}.json`); dl.click();
 }
 
 function importarDados() {
@@ -923,12 +1378,24 @@ function importarDados() {
         const file = e.target.files[0]; const reader = new FileReader(); reader.readAsText(file,'UTF-8');
         reader.onload = re => {
             let d = JSON.parse(re.target.result);
-            if(d.compras) { compras = d.compras; gabaritoCustomizado = d.gabarito; salvar(); alert("Pronto!"); }
+            if(d.compras) compras = d.compras;
+            if(d.gabarito) gabaritoCustomizado = d.gabarito;
+            if(d.promocoes) promocoesPorMercado = d.promocoes;
+            salvarPromocoes();
+            salvar();
+            alert("Backup importado!");
+            location.reload();
         }
     }; input.click();
 }
 
+const paginaGabarito = document.getElementById("paginaGabarito");
+const paginaCarrinho = document.getElementById("paginaCarrinho");
+const paginaHistorico = document.getElementById("paginaHistorico");
+const produtoHistorico = document.getElementById("produtoHistorico");
+
 carregar();
+carregarConfigAutoUpdate();
 </script>
 </body>
 </html>
