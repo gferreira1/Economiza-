@@ -870,125 +870,48 @@ function mudarAba(aba) {
     document.getElementById("btnAbaGabarito").classList.remove("ativo");
     document.getElementById("btnAbaCarrinho").classList.remove("ativo");
     document.getElementById("btnAbaHistorico").classList.remove("ativo");
-    document.getElementById("btnVirarMes").classList.add("oculto");
-    document.getElementById("secaoScanner").classList.add("oculto");
+
+    document.getElementById(`btnAba${aba.charAt(0).toUpperCase() + aba.slice(1)}`).classList.add("ativo");
+
     paginaGabarito.classList.add("oculto");
     paginaCarrinho.classList.add("oculto");
     paginaHistorico.classList.add("oculto");
-
-    if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
-        html5QrcodeScanner.stop().then(() => {
-            const btn = document.getElementById("btnIniciarCamera");
-            btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
-            btn.style.background = "#4f46e5";
-        });
-    }
+    document.getElementById("secaoScanner").classList.add("oculto");
 
     if (aba === "gabarito") {
-        document.getElementById("btnAbaGabarito").classList.add("ativo");
         paginaGabarito.classList.remove("oculto");
+        document.getElementById("secaoScanner").classList.remove("oculto");
     } else if (aba === "carrinho") {
-        document.getElementById("btnAbaCarrinho").classList.add("ativo");
         paginaCarrinho.classList.remove("oculto");
-        document.getElementById("btnVirarMes").classList.remove("oculto");
-        document.getElementById("secaoScanner").classList.remove("oculto"); 
-    } else if (aba === "historico") {
-        document.getElementById("btnAbaHistorico").classList.add("ativo");
+    } else {
         paginaHistorico.classList.remove("oculto");
-        atualizarGrafico();
     }
     carregar();
 }
-
-function alterarStatus(index, val, idElemento) { 
-    if (val === "true" && (!compras[index].valor || compras[index].valor <= 0)) {
-        alert(`Digite o preço de "${compras[index].produto}" antes de marcar como comprado.`);
-        const select = document.getElementById(`statusSelect-${idElemento}`);
-        if(select) select.value = "false";
-        return;
-    }
-    compras[index].comprado = (val === "true"); 
-    salvar(); 
-}
-
-function alterarQuantidade(index, val) { compras[index].quantidade = Number(val) || 1; salvar(); }
-function alterarValor(index, val) { compras[index].valor = Number(val) || 0; salvar(); }
-function alterarData(index, val) { compras[index].data = val; salvar(); }
-function alterarMercado(index, val) { compras[index].mercado = val; salvar(); }
 
 function salvar() {
     localStorage.setItem("compras_v3", JSON.stringify(compras));
     carregar();
 }
 
-function carregarFiltroProdutosGrafico(){
-    let UrbanPr = [...new Set(compras.filter(x => x.valor > 0).map(x => x.produto))].sort();
-    let anterior = produtoHistorico.value;
-    produtoHistorico.innerHTML = "";
-    if(UrbanPr.length === 0) {
-        produtoHistorico.innerHTML = "<option>Nenhum histórico disponível</option>";
-        return;
-    }
-    UrbanPr.forEach(prod => { produtoHistorico.innerHTML += `<option value="${prod}">${prod}</option>`; });
-    if(anterior && UrbanPr.includes(anterior)) produtoHistorico.value = anterior;
-}
-
-produtoHistorico.addEventListener("change", atualizarGrafico);
-
-function atualizarGrafico(){
-    let prod = produtoHistorico.value;
-    let dados = compras.filter(x => x.produto === prod && x.valor > 0 && x.data).sort((a,b) => new Date(a.data) - new Date(b.data));
-    if(dados.length === 0) {
-        document.getElementById("menorPreco").innerText = "R$ 0,00";
-        document.getElementById("maiorPreco").innerText = "R$ 0,00";
-        document.getElementById("ultimoPreco").innerText = "R$ 0,00";
-        if(grafico) grafico.destroy();
-        return;
-    }
-    let labels = dados.map(x => {
-        let p = x.data.split('-');
-        return x.mercado ? `${p[2]}/${p[1]} (${x.mercado})` : `${p[2]}/${p[1]}`;
-    });
-    let valores = dados.map(x => x.valor);
-    if(grafico) grafico.destroy();
-    grafico = new Chart(document.getElementById("grafico"), {
-        type: 'line',
-        data: { labels, datasets: [{ label: 'Preço', data: valores, borderColor: '#2563eb', fill: false }] }
-    });
-    let menorItem = [...dados].sort((a,b) => a.valor - b.valor)[0];
-    let maiorItem = [...dados].sort((a,b) => b.valor - a.valor)[0];
-    let ultimoItem = dados[dados.length - 1];
-    document.getElementById("menorPreco").innerText = `R$ ${menorItem.valor.toFixed(2)} (${menorItem.mercado || '?'})`;
-    document.getElementById("maiorPreco").innerText = `R$ ${maiorItem.valor.toFixed(2)} (${maiorItem.mercado || '?'})`;
-    document.getElementById("ultimoPreco").innerText = `R$ ${ultimoItem.valor.toFixed(2)} (${ultimoItem.mercado || '?'})`;
-}
-
-function novoMes(){
-    if(!confirm("Deseja fechar o mês?")) return;
-    compras.forEach(item => {
-        if(item.noCarrinho && !item.arquivado) {
-            if(item.comprado && item.valor > 0) item.arquivado = true; else item.noCarrinho = false;
-        }
-    });
+function alterarStatus(index, status, id) {
+    compras[index].comprado = (status === "true");
     salvar();
 }
 
-function exportarDados() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ gabarito: gabaritoCustomizado, compras: compras }));
-    const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", `backup.json`); dl.click();
+function alterarQuantidade(index, qtd) { compras[index].quantidade = parseFloat(qtd); salvar(); }
+function alterarValor(index, val) { compras[index].valor = parseFloat(val); salvar(); }
+function alterarMercado(index, mkt) { compras[index].mercado = mkt; salvar(); }
+function alterarData(index, dt) { compras[index].data = dt; salvar(); }
+
+function novoMes() {
+    if(confirm("Deseja fechar o mês e arquivar a lista atual?")) {
+        compras.forEach(item => { if(item.comprado) item.arquivado = true; item.noCarrinho = false; });
+        salvar();
+    }
 }
 
-function importarDados() {
-    const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
-    input.onchange = e => {
-        const file = e.target.files[0]; const reader = new FileReader(); reader.readAsText(file,'UTF-8');
-        reader.onload = re => {
-            let d = JSON.parse(re.target.result);
-            if(d.compras) { compras = d.compras; gabaritoCustomizado = d.gabarito; salvar(); alert("Pronto!"); }
-        }
-    }; input.click();
-}
-
+// Inicialização
 carregar();
 </script>
 </body>
