@@ -127,7 +127,6 @@ header h1{
     .menu button.ativo { background: transparent; color: var(--azul); }
 }
 
-/* Área do Scanner de Nota Fiscal */
 .container-scanner {
     max-width: 1200px;
     margin: 10px auto;
@@ -266,7 +265,14 @@ header h1{
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 2px solid transparent;
     transition: all 0.2s ease;
+}
+
+/* Novo estilo para quando o backend detectar o item no encarte */
+.item-card.em-oferta-miller {
+    border-color: var(--verde) !important;
+    background: #f0fdf4;
 }
 
 .item-card.comprado { opacity: 0.4; }
@@ -275,13 +281,26 @@ header h1{
 
 .tag-melhor-preco {
     font-size: 11px;
-    color: var(--cinza);
-    background: #f1f5f9;
+    color: var(--verde);
+    background: #e6f4ea;
     padding: 4px 8px;
     border-radius: 6px;
     margin-top: 4px;
     display: inline-block;
-    font-weight: 500;
+    font-weight: 600;
+}
+
+/* Tag para avisar que o produto foi encontrado na foto do folheto */
+.tag-oferta-miller-img {
+    font-size: 11px;
+    color: #166534;
+    background: #bbf7d0;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-block;
+    font-weight: 700;
+    cursor: pointer;
 }
 
 .btnAdicionar {
@@ -290,7 +309,7 @@ header h1{
 }
 .btnAdicionar.ja-adicionado { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 
-.detalhes-produto { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--borda); width: 100%; }
+.detalhes-produto { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--borda); }
 .detalhes-produto.ativo { display: block; }
 .linha-inputs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .campo { display: flex; flex-direction: column; gap: 4px; }
@@ -435,6 +454,9 @@ let abaAtual = "gabarito";
 let grafico;
 let html5QrcodeScanner = null;
 
+// Cache local para armazenar o resultado das ofertas e evitar requisições infinitas
+let ofertasMillerCache = {};
+
 const paginaGabarito = document.getElementById("paginaGabarito");
 const paginaCarrinho = document.getElementById("paginaCarrinho");
 const paginaHistorico = document.getElementById("paginaHistorico");
@@ -540,6 +562,65 @@ function renderizarFavoritos() {
     }
 }
 
+/**
+ * Nova Função: Consulta em tempo real o servidor Node.js local
+ * para cruzar o item com o texto extraído do panfleto gráfico.
+ */
+async function verificarOfertaBackend(produtoNome, idElemento, indexReal) {
+    // Se já verificamos este produto nesta sessão do app, pula a requisição para economizar banda
+    if (ofertasMillerCache[produtoNome] !== undefined) {
+        aplicarLayoutOferta(ofertasMillerCache[produtoNome], idElemento, indexReal);
+        return;
+    }
+
+    try {
+        const resposta = await fetch(`http://localhost:3000/buscar-ofertas-miller?produto=${encodeURIComponent(produtoNome)}`);
+        const dados = await reply = await resposta.json();
+
+        if (dados && dados.ofertaAtiva) {
+            ofertasMillerCache[produtoNome] = dados;
+            aplicarLayoutOferta(dados, idElemento, indexReal);
+        }
+    } catch (error) {
+        console.log("Servidor backend offline ou inacessível no momento.");
+    }
+}
+
+/**
+ * Função Auxiliar: Aplica os estilos visuais de promoção diretamente no card
+ */
+function aplicarLayoutOferta(dadosOferta, idElemento, indexReal) {
+    const card = document.getElementById(`card-item-${idElemento}`);
+    const containerTags = document.getElementById(`tags-oferta-${idElemento}`);
+    
+    if (card && containerTags) {
+        card.classList.add("em-oferta-miller");
+        
+        let labelPreco = dadosOferta.valor > 0 ? `R$ ${dadosOferta.valor.toFixed(2)}` : 'Ver Encarte';
+        containerTags.innerHTML += `
+            <span class="tag-oferta-miller-img" onclick="window.open('${dadosOferta.urlImagem}', '_blank')">
+                💥 No Encarte Miller: ${labelPreco} 🔍
+            </span>
+        `;
+
+        // Se o produto não possuía preço definido e a IA descobriu o preço, auto-preenche o input
+        if (compras[indexReal] && !compras[indexReal].valor && dadosOferta.valor > 0) {
+            compras[indexReal].valor = dadosOferta.valor;
+            compras[indexReal].mercado = "Super Miller";
+            localStorage.setItem("compras_v3", JSON.stringify(compras));
+            
+            // Recarrega de forma isolada os inputs visualmente sem resetar a aba inteira
+            const inputPreco = document.getElementById(`input-preco-${idElemento}`);
+            const inputMercado = document.getElementById(`input-mercado-${idElemento}`);
+            const subtotalExibido = document.querySelector(`#detalhes-${idElemento} .valor-total`);
+            
+            if(inputPreco) inputPreco.value = dadosOferta.valor;
+            if(inputMercado) inputMercado.value = "Super Miller";
+            if(subtotalExibido) subtotalExibido.innerText = `R$ ${(dadosOferta.valor * (compras[indexReal].quantidade || 1)).toFixed(2)}`;
+        }
+    }
+}
+
 function carregar() {
     const busca = document.getElementById("busca").value.toLowerCase();
     
@@ -553,6 +634,7 @@ function carregar() {
             if (item.comprado) {
                 comprados++;
             } else {
+                disabled = false;
                 pendentes++;
             }
         }
@@ -562,7 +644,6 @@ function carregar() {
     document.getElementById("qtdComprados").innerText = comprados;
     document.getElementById("qtdTotalGeral").innerText = totalGeralItens;
 
-    // --- ABA ADICIONAR (GABARITO) ---
     if (abaAtual === "gabarito") {
         paginaGabarito.innerHTML = "";
         let produtosFiltrados = [...new Set(gabaritoCustomizado)].sort((a, b) => a.localeCompare(b, 'pt', { sensitivity: 'base' }));
@@ -591,7 +672,6 @@ function carregar() {
         });
     }
 
-    // --- ABA LISTA ATUAL (CARRINHO) - COM RASTREIO DA OFERTA PUBLICADA NO MILLER ---
     if (abaAtual === "carrinho") {
         document.getElementById("secaoSugestoes").style.display = "none";
         paginaCarrinho.innerHTML = "";
@@ -615,27 +695,28 @@ function carregar() {
                 const indexReal = compras.findIndex(x => x.id === item.id);
                 let preçoSugerido = item.valor || obterUltimoPrecoValido(item.produto);
                 let melhorOferta = obterMelhorOfertaHistorico(item.produto);
-                let textoHistorico = melhorOferta ? `<span class="tag-melhor-preco">🏷 Seu Histórico: R$ ${melhorOferta.valor.toFixed(2)} no ${melhorOferta.mercado}</span>` : '';
-                
-                let idCard = `card-item-${item.id}`;
-                let idTexto = `texto-oferta-${item.id}`;
+                let textoOferta = melhorOferta ? `<span class="tag-melhor-preco">🏷 Seu Histórico: R$ ${melhorOferta.valor.toFixed(2)} no ${melhorOferta.mercado}</span>` : '';
+
+                // Geramos um ID seguro para manipulação do DOM substituindo caracteres flutuantes
+                let idSanitizado = String(item.id).replace('.', '-');
 
                 paginaCarrinho.innerHTML += `
-                <div id="${idCard}" class="item-card ${item.comprado ? 'comprado' : ''}">
+                <div id="card-item-${idSanitizado}" class="item-card ${item.comprado ? 'comprado' : ''}">
                     <div class="flex-col">
                         <div class="topo-card">
                             <div>
-                                <h3 onclick="toggleDetalhesCard(${item.id})">${item.produto}</h3>
-                                <div id="${idTexto}" style="font-size:11px; color:var(--cinza); margin-top:3px;">🔍 Verificando encarte do Miller...</div>
-                                ${textoHistorico}
+                                <h3 onclick="toggleDetalhesCard('${idSanitizado}')">${item.produto}</h3>
+                                <div id="tags-oferta-${idSanitizado}">
+                                    ${textoOferta}
+                                </div>
                             </div>
                             <div style="display:flex; gap:10px; align-items:center;">
-                                <button class="btnToggleDetalhes" onclick="toggleDetalhesCard(${item.id})">⚙ Config</button>
+                                <button class="btnToggleDetalhes" onclick="toggleDetalhesCard('${idSanitizado}')">⚙ Config</button>
                                 <button class="btnRemover" onclick="removerDoCarrinho(${indexReal})">✕</button>
                             </div>
                         </div>
                         
-                        <div id="detalhes-${item.id}" class="detalhes-produto">
+                        <div id="detalhes-${idSanitizado}" class="detalhes-produto">
                             <div>
                                 <button class="btnBuscarNfg" onclick="buscarPrecoExterno('${item.produto.replace(/'/g, "\\'")}')">
                                     🔍 Pesquisar Ofertas na Internet
@@ -645,7 +726,7 @@ function carregar() {
                             <div class="linha-inputs">
                                 <div class="campo">
                                     <label>Status</label>
-                                    <select id="statusSelect-${item.id}" onchange="alterarStatus(${indexReal}, this.value, ${item.id})">
+                                    <select id="statusSelect-${idSanitizado}" onchange="alterarStatus(${indexReal}, this.value, '${idSanitizado}')">
                                         <option value="false" ${!item.comprado ? 'selected' : ''}>⚠ Falta</option>
                                         <option value="true" ${item.comprado ? 'selected' : ''}>✔ Ok</option>
                                     </select>
@@ -656,11 +737,11 @@ function carregar() {
                                 </div>
                                 <div class="campo">
                                     <label>Preço Unit.</label>
-                                    <input type="number" style="width:70px;" step="0.01" placeholder="${preçoSugerido ? preçoSugerido.toFixed(2) : '0,00'}" value="${item.valor || ''}" onchange="alterarValor(${indexReal}, this.value)">
+                                    <input id="input-preco-${idSanitizado}" type="number" style="width:70px;" step="0.01" placeholder="${preçoSugerido ? preçoSugerido.toFixed(2) : '0,00'}" value="${item.valor || ''}" onchange="alterarValor(${indexReal}, this.value)">
                                 </div>
                                 <div class="campo">
                                     <label>Mercado</label>
-                                    <input type="text" style="width:100px;" placeholder="Ex: Atacadão" value="${item.mercado || ''}" onchange="alterarMercado(${indexReal}, this.value)">
+                                    <input id="input-mercado-${idSanitizado}" type="text" style="width:100px;" placeholder="Ex: Atacadão" value="${item.mercado || ''}" onchange="alterarMercado(${indexReal}, this.value)">
                                 </div>
                                 <div class="campo">
                                     <label>Data</label>
@@ -675,35 +756,9 @@ function carregar() {
                     </div>
                 </div>`;
 
-                // Dispara a requisição em tempo real para o seu Backend de Raspagem do Miller
+                // Dispara a consulta assíncrona ao servidor local para cruzar dados com o encarte
                 if (!item.comprado) {
-                    fetch(`http://localhost:3000/buscar-ofertas-miller?produto=${encodeURIComponent(item.produto)}`)
-                    .then(res => res.json())
-                    .then(dados => {
-                        const cardElem = document.getElementById(idCard);
-                        const textoElem = document.getElementById(idTexto);
-
-                        if (dados.ofertaAtiva) {
-                            // FICA VERDE E DESTACA A OFERTA PUBLICADA
-                            cardElem.style.border = "2px solid var(--verde)";
-                            cardElem.style.background = "#f0fdf4";
-                            
-                            if (dados.verificar) {
-                                textoElem.innerHTML = `<span style="color: var(--verde); font-weight: 700;">📢 Item listado no encarte atual do Super Miller! (Toque para abrir)</span>`;
-                                cardElem.style.cursor = "pointer";
-                                cardElem.onclick = () => window.open("https://www.supermiller.com.br/ofertas.html", "_blank");
-                            } else {
-                                textoElem.innerHTML = `<span style="color: var(--verde); font-weight: 700;">📢 No Super Miller esta com oferta por R$ ${dados.valor.toFixed(2)}!</span>`;
-                            }
-                        } else {
-                            textoElem.innerHTML = `<span style="color: var(--cinza); font-size: 11px;">Não encontrado no encarte do Miller esta semana.</span>`;
-                        }
-                    })
-                    .catch(() => {
-                        document.getElementById(idTexto).innerHTML = `<span style="color: var(--cinza); font-size: 11px;">Aviso: Servidor de ofertas offline.</span>`;
-                    });
-                } else {
-                    document.getElementById(idTexto).innerHTML = "";
+                    verificarOfertaBackend(item.produto, idSanitizado, indexReal);
                 }
             });
         });
