@@ -478,20 +478,62 @@ const promocoesMillerVigentes = {
     "linguiça": { preco: 15.69, detalhe: "Excelsior Churrasco 800g" }
 };
 
-// 3. Banco de Dados: Promoções Desco (Vigentes a partir de 16/06/2026)
+// 3. Banco de Dados: Promoções Desco (Vigentes de 16/06 a 22/06/2026)
+// Banco de Dados Consolidado: Ofertas Desco (Vigentes 16/06 a 22/06/2026)
 const promocoesDescoVigentes = {
-    "arroz": { preco: 12.90, detalhe: "Arroz T1 Líder 5Kg" },
+    // Mercearia e Básicos
+    "arroz": { preco: 12.90, detalhe: "Arroz T1 Líder/Italianinho 5Kg" },
     "farinha de trigo": { preco: 14.95, detalhe: "Farinha Roseflor 5Kg" },
-    "cerveja heineken": { preco: 5.99, detalhe: "Heineken Long Neck 330ml" },
-    "água sanitária": { preco: 13.90, detalhe: "Água Sanitária Qboa 5L" },
-    "sabão em pó": { preco: 24.90, detalhe: "Omo 2,4Kg" },
-    "linguiça calabresa": { preco: 19.90, detalhe: "Linguiça Calabresa JCW 950g" },
     "feijão": { preco: 4.49, detalhe: "Feijão Preto Itaúba 1Kg" },
-    "amaciante girando sol": { preco: 19.47, detalhe: "Girando Sol Conc. 1.5L" },
-    "lava roupas girando sol": { preco: 27.12, detalhe: "Lava Roupas Líq. 3L" },
-    "biscoito trakinas": { preco: 2.69, detalhe: "Trakinas 126g" },
-    "biscoito oreo": { preco: 3.49, detalhe: "Oreo Original 90g" },
-    "biscoito club social": { preco: 4.79, detalhe: "Club Social 141g" }
+    "açúcar": { preco: 14.95, detalhe: "Docesucar 5Kg" },
+    "milho verde": { preco: 19.90, detalhe: "Predilecta 1,7kg" },
+    "extrato de tomate": { preco: 3.39, detalhe: "Cajamar 350g" },
+    "molho de tomate": { preco: 14.98, detalhe: "Bonare 1,7kg" },
+    
+    // Açougue e Frios
+    "linguiça calabresa": { preco: 19.90, detalhe: "JCW 950g" },
+    "filezinho de frango": { preco: 17.90, detalhe: "Frangosul 1kg" },
+    "paleta suína": { preco: 12.90, detalhe: "Com pele Kg" },
+    "queijo mussarela": { preco: 13.90, detalhe: "Rodeio 300g" },
+    "requeijão": { preco: 12.90, detalhe: "Piá 400g" },
+    "queijo ralado": { preco: 35.99, detalhe: "Líder do Sul 500g" },
+    "bacon": { preco: 30.90, detalhe: "Dalia Meia Manta Kg" },
+    "presunto": { preco: 23.90, detalhe: "Lebon 700g" },
+    "mortadela": { preco: 4.99, detalhe: "Perdigão 400g" },
+    "margarina": { preco: 10.95, detalhe: "Claybom 1kg" },
+    
+    // Bebidas e Matinais
+    "cerveja heineken": { preco: 5.99, detalhe: "Long Neck 330ml" },
+    "cerveja bellavista": { preco: 2.99, detalhe: "Lata 350ml" },
+    "vinho tinto": { preco: 11.90, detalhe: "Beltrame 1,45L" },
+    "bebida mista": { preco: 9.90, detalhe: "Frukito 5L" },
+    "leite condensado": { preco: 4.79, detalhe: "Italac 395g" },
+    "doce de leite": { preco: 6.99, detalhe: "Italac 350g" },
+    "creme de leite": { preco: 1.99, detalhe: "Tirol 200g" },
+    "iogurte pedaços": { preco: 7.69, detalhe: "Carolina 450g" },
+    "iogurte grego": { preco: 10.90, detalhe: "Batavo 450g" },
+    "iogurte danone": { preco: 14.90, detalhe: "Danone 1250g" },
+    
+    // Limpeza e Higiene
+    "água sanitária": { preco: 13.90, detalhe: "Qboa 5L" },
+    "sabão em pó": { preco: 24.90, detalhe: "Omo 2,4Kg" },
+    "amaciante girando sol": { preco: 16.90, detalhe: "5L" },
+    "lava roupas líquido": { preco: 27.12, detalhe: "Girando Sol 3L" },
+    "lava-louças líquido": { preco: 1.69, detalhe: "Confitá 500ml" },
+    "esponja": { preco: 3.99, detalhe: "Limppano C/4" },
+    "desinfetante": { preco: 14.90, detalhe: "Aquafast 5L" },
+    "papel higiênico": { preco: 21.90, detalhe: "Doble 30m C/16" },
+    "sabonete": { preco: 2.49, detalhe: "Palmolive 85g" },
+    "creme dental": { preco: 2.99, detalhe: "Sorriso 70g" },
+    "absorvente": { preco: 6.99, detalhe: "Sempre Livre C/16" },
+    "desodorante": { preco: 7.90, detalhe: "Above 150ml" },
+    "toalha umedecida": { preco: 7.90, detalhe: "Natural Baby" },
+    
+    // Outros
+    "biscoito trakinas": { preco: 2.49, detalhe: "126g" },
+    "biscoito oreo": { preco: 3.49, detalhe: "90g" },
+    "biscoito club social": { preco: 4.79, detalhe: "141g" },
+    "fralda": { preco: 29.90, detalhe: "Babysec" }
 };
 function obterCategoria(produto) {
     return mapaCategorias[produto] || "Outros";
