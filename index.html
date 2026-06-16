@@ -11,6 +11,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
 <style>
 :root{
     --azul:#2563eb;
@@ -283,6 +286,18 @@ header h1{
     font-weight: 600;
 }
 
+.tag-alerta-oferta {
+    font-size: 11px;
+    color: #b45309;
+    background: #fef3c7;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-block;
+    font-weight: 700;
+    border: 1px dashed #f59e0b;
+}
+
 .btnAdicionar {
     border: none; padding: 8px 12px; border-radius: 8px;
     background: #dcfce7; color: #15803d; font-weight: 600; cursor: pointer;
@@ -411,6 +426,43 @@ header h1{
 </div>
 
 <script>
+// ==========================================
+// CONFIGURAÇÃO DO FIREBASE (ECONOMIZAMAIS)
+// ==========================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCAM7Vq5SS05e4Hy9HRBg7nNqvMvllrFos",
+  authDomain: "economizamais-b1c42.firebaseapp.com",
+  projectId: "economizamais-b1c42",
+  storageBucket: "economizamais-b1c42.firebasestorage.app",
+  messagingSenderId: "271380422087",
+  appId: "1:271380422087:web:081c6fa0e89c4695fccde2",
+  measurementId: "G-Y0SZD7QRQQ"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let ofertasEspeciaisDaCidade = [];
+
+function monitorarOfertasDoFirebase() {
+    db.collection("ofertas_dia").onSnapshot((snapshot) => {
+        ofertasEspeciaisDaCidade = [];
+        snapshot.forEach((doc) => {
+            ofertasEspeciaisDaCidade.push(doc.data());
+        });
+        if (abaAtual === "carrinho") {
+            carregar(); 
+        }
+    }, (error) => {
+        console.error("Erro ao conectar com o Firestore: ", error);
+    });
+}
+
+monitorarOfertasDoFirebase();
+
+// ==========================================
+// MAPA DE CATEGORIAS E PRODUTOS
+// ==========================================
 const mapaCategorias = {
     "Água com gás": "Bebidas", "Água mineral": "Bebidas", "Refrigerante": "Bebidas", "Café": "Matinais", "Leite": "Matinais", "Erva-mate": "Matinais", "Achocolatado": "Matinais",
     "Arroz": "Mercearia", "Feijão": "Mercearia", "Macarrão": "Mercearia", "Açúcar": "Mercearia", "Óleo": "Mercearia", "Sal": "Mercearia", "Farinha de trigo": "Mercearia", "Farofa": "Mercearia", "Vinagre": "Mercearia",
@@ -439,6 +491,9 @@ const paginaCarrinho = document.getElementById("paginaCarrinho");
 const paginaHistorico = document.getElementById("paginaHistorico");
 const produtoHistorico = document.getElementById("produtoHistorico");
 
+// ==========================================
+// LÓGICA DO SCANNER INTEGRAÇÃO DIRETA POR API
+// ==========================================
 function alternarScanner() {
     const btn = document.getElementById("btnIniciarCamera");
     
@@ -464,15 +519,83 @@ function alternarScanner() {
             html5QrcodeScanner.stop().then(() => {
                 btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
                 btn.style.background = "#4f46e5";
-                window.open(qrCodeMessage, '_blank');
+                processarQrCodeSemSairDoApp(qrCodeMessage);
             }).catch(err => console.log(err));
         },
         (errorMessage) => { }
     ).catch(err => {
-        alert("Aviso: A câmera precisa de uma conexão segura (HTTPS) ou servidor local (localhost) para rodar no celular.");
+        let linkManual = prompt("Aviso: Câmera travada ou sem HTTPS. Cole a URL completa ou a chave de 44 números da Nota:");
+        if (linkManual) {
+            processarQrCodeSemSairDoApp(linkManual);
+        }
         btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
         btn.style.background = "#4f46e5";
     });
+}
+
+function processarQrCodeSemSairDoApp(qrCodeMessage) {
+    let chaveEncontrada = qrCodeMessage.match(/\d{44}/);
+    
+    if (!chaveEncontrada) {
+        alert("Chave de acesso de 44 dígitos não identificada.");
+        return;
+    }
+    
+    const chaveAcesso = chaveEncontrada[0];
+    alert("Código detectado! Carregando compras de forma automática...");
+
+    fetch(`https://brasilapi.com.br/api/nfe/v1/${chaveAcesso}`)
+        .then(response => {
+            if (!response.ok) throw new Error("Servidor ocupado ou nota ainda não processada na Sefaz Nacional.");
+            return response.json();
+        })
+        .then(dadosNota => {
+            let itensDaNota = dadosNota.produtos || dadosNota.itens || [];
+            let mercadoNome = dadosNota.emitente?.nome_fantasia || dadosNota.emitente?.razao_social || "Supermercado";
+            const dataHoje = new Date().toISOString().split('T')[0];
+
+            if (itensDaNota.length === 0) {
+                alert("Nota lida, mas a lista de itens está inacessível no momento.");
+                return;
+            }
+
+            itensDaNota.forEach(item => {
+                let nomeProd = item.nome || item.descricao;
+                let precoProd = parseFloat(item.valor_unitario || item.preco || 0);
+                let qtdProd = parseInt(item.quantidade || 1);
+
+                nomeProd = nomeProd.charAt(0).toUpperCase() + nomeProd.slice(1).toLowerCase();
+
+                let itemNoCarrinho = compras.find(x => x.produto.toLowerCase() === nomeProd.toLowerCase() && x.noCarrinho && !x.arquivado);
+                
+                if (itemNoCarrinho) {
+                    itemNoCarrinho.valor = precoProd;
+                    itemNoCarrinho.quantidade = qtdProd;
+                    itemNoCarrinho.mercado = mercadoNome;
+                    itemNoCarrinho.data = dataHoje;
+                    itemNoCarrinho.comprado = true;
+                } else {
+                    compras.push({
+                        id: Date.now() + Math.random(),
+                        produto: nomeProd,
+                        quantidade: qtdProd,
+                        valor: precoProd,
+                        mercado: mercadoNome,
+                        data: dataHoje,
+                        comprado: true,
+                        noCarrinho: true,
+                        arquivado: false
+                    });
+                }
+            });
+
+            salvar();
+            alert(`Sucesso! Itens do "${mercadoNome}" injetados no carrinho.`);
+        })
+        .catch(erro => {
+            console.error(erro);
+            alert("Não conseguimos extrair os dados. A nota é muito nova ou o servidor nacional está instável.");
+        });
 }
 
 function buscarPrecoExterno(nomeProduto) {
@@ -484,15 +607,17 @@ function buscarPrecoExterno(nomeProduto) {
 function obterMelhorOfertaHistorico(produto) {
     let historicoValido = compras.filter(x => x.produto === produto && x.valor > 0 && x.comprado && x.mercado);
     if(historicoValido.length === 0) return null;
-    historicoValido.sort((a, b) => a.valor - b.valor);
-    return { mercado: historicoValido[0].mercado, valor: historicoValido[0].valor };
+    let copiaHistorico = [...historicoValido];
+    copiaHistorico.sort((a, b) => a.valor - b.valor);
+    return { mercado: copiaHistorico[0].mercado, valor: copiaHistorico[0].valor };
 }
 
 function obterUltimoPrecoValido(produto) {
     let historico = compras.filter(x => x.produto === produto && x.valor > 0 && x.comprado);
     if(historico.length > 0) {
-        historico.sort((a,b) => new Date(b.data) - new Date(a.data));
-        return historico[0].valor;
+        let copiaHistorico = [...historico];
+        copiaHistorico.sort((a,b) => new Date(b.data) - new Date(a.data));
+        return copiaHistorico[0].valor;
     }
     return 0;
 }
@@ -537,6 +662,9 @@ function renderizarFavoritos() {
     }
 }
 
+// ==========================================
+// RENDERIZAÇÃO DA INTERFACE (MÓDULO CENTRAL)
+// ==========================================
 function carregar() {
     const busca = document.getElementById("busca").value.toLowerCase();
     
@@ -610,7 +738,16 @@ function carregar() {
                 const indexReal = compras.findIndex(x => x.id === item.id);
                 let preçoSugerido = item.valor || obterUltimoPrecoValido(item.produto);
                 let melhorOferta = obterMelhorOfertaHistorico(item.produto);
+                
+                // CRUZA COM OS DADOS EM TEMPO REAL DO FIREBASE
+                let ofertaFirebase = ofertasEspeciaisDaCidade.find(o => o.produto.toLowerCase() === item.produto.toLowerCase());
+
                 let textoOferta = melhorOferta ? `<span class="tag-melhor-preco">🏷 Seu Histórico: R$ ${melhorOferta.valor.toFixed(2)} no ${melhorOferta.mercado}</span>` : '';
+                
+                // Se houver uma oferta cadastrada no Firebase, exibe o Alerta Amarelo pro usuário!
+                if (ofertaFirebase) {
+                    textoOferta += `<br><span class="tag-alerta-oferta">🔥 Oferta Hoje: R$ ${parseFloat(ofertaFirebase.valorOffer || ofertaFirebase.valorOferta).toFixed(2)} no ${ofertaFirebase.mercado}</span>`;
+                }
 
                 paginaCarrinho.innerHTML += `
                 <div class="item-card ${item.comprado ? 'comprado' : ''}">
@@ -787,7 +924,9 @@ function carregarFiltroProdutosGrafico(){
     UrbanPr.forEach(prod => {
         produtoHistorico.innerHTML += `<option value="${prod}">${prod}</option>`;
     });
-    if(anterior && UrbanPr.includes(anterior)) produtoHistorico.value = anterior;
+    if(anterior && UrbanPr.includes(anterior)) {
+        produtoHistorico.value = anterior;
+    }
 }
 
 produtoHistorico.addEventListener("change", atualizarGrafico);
@@ -795,6 +934,14 @@ produtoHistorico.addEventListener("change", atualizarGrafico);
 function atualizarGrafico(){
     let prod = produtoHistorico.value;
     let dados = compras.filter(x => x.produto === prod && x.valor > 0 && x.data).sort((a,b) => new Date(a.data) - new Date(b.data));
+
+    if(dados.length === 0) {
+        document.getElementById("menorPreco").innerText = "R$ 0,00";
+        document.getElementById("maiorPreco").innerText = "R$ 0,00";
+        document.getElementById("ultimoPreco").innerText = "R$ 0,00";
+        if(grafico) grafico.destroy();
+        return;
+    }
 
     let labels = dados.map(x => {
         let p = x.data.split('-');
@@ -804,13 +951,6 @@ function atualizarGrafico(){
     let valores = dados.map(x => x.valor);
 
     if(grafico) grafico.destroy();
-
-    if(dados.length === 0) {
-        document.getElementById("menorPreco").innerText = "R$ 0,00";
-        document.getElementById("maiorPreco").innerText = "R$ 0,00";
-        document.getElementById("ultimoPreco").innerText = "R$ 0,00";
-        return;
-    }
 
     grafico = new Chart(document.getElementById("grafico"), {
         type: 'line',
@@ -833,7 +973,7 @@ function atualizarGrafico(){
 
     document.getElementById("menorPreco").innerText = `R$ ${menorItem.valor.toFixed(2)} (${menorItem.mercado || '?'})`;
     document.getElementById("maiorPreco").innerText = `R$ ${maiorItem.valor.toFixed(2)} (${maiorItem.mercado || '?'})`;
-    document.getElementById("ultimoPreco").innerText = `R$ ${ultimoItem.valor.toFixed(2)} (${ultimoItem.ultimoItem || '?'})`;
+    document.getElementById("ultimoPreco").innerText = `R$ ${ultimoItem.valor.toFixed(2)} (${ultimoItem.mercado || '?'})`;
 }
 
 function novoMes(){
@@ -887,7 +1027,9 @@ function importarDados() {
     input.click();
 }
 
+// Inicialização correta
 carregar();
+carregarFiltroProdutosGrafico();
 </script>
 
 </body>
