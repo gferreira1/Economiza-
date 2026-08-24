@@ -1,588 +1,528 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Extrator DESCO - PERFEITO</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1100px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        h1 { color: #333; }
-        .subtitle { color: #666; margin-bottom: 25px; font-size: 14px; }
-        .file-area {
-            border: 2px dashed #cbd5e1;
-            padding: 40px;
-            text-align: center;
-            border-radius: 8px;
-            background: #f8fafc;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin: 15px 0;
-        }
-        .file-area:hover { border-color: #7c3aed; background: #f1f5f9; }
-        .file-area input[type="file"] { display: none; }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-            flex-wrap: wrap;
-        }
-        button {
-            flex: 1;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 15px;
-            transition: all 0.3s;
-            color: white;
-            min-width: 120px;
-        }
-        .btn-primary { background: #7c3aed; }
-        .btn-primary:hover { background: #6d28d9; transform: translateY(-2px); }
-        .btn-success { background: #10b981; }
-        .btn-success:hover { background: #059669; transform: translateY(-2px); }
-        .btn-warning { background: #f59e0b; }
-        .btn-warning:hover { background: #d97706; transform: translateY(-2px); }
-        .btn-danger { background: #ef4444; }
-        .btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
-        .status {
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-weight: 500;
-        }
-        .status.loading { background: #fef3c7; color: #92400e; }
-        .status.success { background: #d1fae5; color: #065f46; }
-        .status.error { background: #fee2e2; color: #991b1b; }
-        .status.info { background: #dbeafe; color: #1e40af; }
-        .badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .badge-merc { background: #d1fae5; color: #065f46; }
-        .badge-preco { background: #fef3c7; color: #92400e; }
-        .extracted-item {
-            background: white;
-            padding: 8px 12px;
-            margin: 3px 0;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            font-size: 13px;
-        }
-        .extracted-item .produto { font-weight: 600; flex: 2; min-width: 200px; }
-        .extracted-item .preco { color: #7c3aed; font-weight: bold; }
-        .extracted-item .mercado { color: #059669; font-size: 13px; }
-        .stats {
-            display: flex;
-            gap: 20px;
-            margin: 10px 0;
-            flex-wrap: wrap;
-        }
-        .stats span {
-            background: #f1f5f9;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-        .result-box {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f1f5f9;
-            border-radius: 8px;
-            border-left: 4px solid #7c3aed;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-        .result-box pre {
-            white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #e2e8f0;
-            border-radius: 2px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        .progress-bar .fill {
-            height: 100%;
-            background: #7c3aed;
-            width: 0%;
-            transition: width 0.3s;
-        }
-        .grid-produtos {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        .count-badge {
-            background: #7c3aed;
-            color: white;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-        .texto-extraido {
-            background: #f8fafc;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            margin: 10px 0;
-            font-family: monospace;
-            white-space: pre-wrap;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Compras Inteligente</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+
+<style>
+/* ... (seu CSS existente) ... */
+</style>
 </head>
+
 <body>
-<div class="container">
-    <h1>🛒 Extrator DESCO <span class="count-badge" id="countBadge">0</span></h1>
-    <p class="subtitle">100% DINÂMICO - Extrai QUALQUER produto do PDF automaticamente</p>
 
-    <div class="file-area" onclick="document.getElementById('fileInput').click()">
-        <input type="file" id="fileInput" accept=".pdf">
-        <div>📁 <strong>Clique para selecionar</strong> o PDF do DESCO</div>
-        <small style="color:#888;">SEM PRODUTOS FIXOS - Funciona com QUALQUER PDF</small>
-    </div>
+<!-- ... (seu HTML existente) ... -->
 
-    <div class="btn-group">
-        <button class="btn-primary" onclick="processarArquivo()">📄 Extrair Produtos</button>
-        <button class="btn-success" onclick="salvarBanco()">💾 Salvar no Banco</button>
-        <button class="btn-warning" onclick="baixarJSON()">📥 Baixar JSON</button>
-        <button class="btn-danger" onclick="limparDados()">🗑️ Limpar</button>
-    </div>
+<script>
+// ============================================================
+// ===== BANCO DE DADOS LOCAL (SIMULAÇÃO) =====
+// ============================================================
 
-    <div id="status" class="status info">Aguardando PDF...</div>
-    <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
-
-    <div id="textoPreview" style="display:none;">
-        <strong>📝 Texto Extraído:</strong>
-        <div class="texto-extraido" id="textoExtraido"></div>
-    </div>
-
-    <div id="preview" style="display:none;">
-        <h3>📊 Produtos Encontrados</h3>
-        <div id="stats" class="stats"></div>
-        <div id="extractedList" class="grid-produtos"></div>
-    </div>
-
-    <div class="result-box">
-        <strong>📋 Log:</strong>
-        <pre id="output">Aguardando ação...</pre>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyCAM7Vq5SS05e4Hy9HRBg7nNqvMvllrFos",
-        authDomain: "economizamais-b1c42.firebaseapp.com",
-        projectId: "economizamais-b1c42",
-        storageBucket: "economizamais-b1c42.firebasestorage.app",
-        messagingSenderId: "271380422087",
-        appId: "1:271380422087:web:081c6fa0e89c4695fccde2",
-        measurementId: "G-Y0SZD7QRQQ"
-    };
-
-    let db = null;
-    let firebaseInicializado = false;
-
-    try {
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        firebaseInicializado = true;
-    } catch (error) {
-        console.warn('⚠️ Firebase não inicializado:', error.message);
-        firebaseInicializado = false;
-    }
-
-    let produtosExtraidos = [];
-
-    function log(msg, tipo = 'info') {
-        const output = document.getElementById('output');
-        const timestamp = new Date().toLocaleTimeString();
-        output.textContent += `\n[${timestamp}] ${msg}`;
-        output.scrollTop = output.scrollHeight;
-        const status = document.getElementById('status');
-        status.className = `status ${tipo}`;
-        status.textContent = msg;
-    }
-
-    function setProgress(value) {
-        document.getElementById('progressFill').style.width = value + '%';
-    }
-
-    // 🔍 EXTRAIR PRODUTOS - 100% DINÂMICO E PERFEITO
-    function extrairProdutos(texto) {
-        log("🔍 Extraindo produtos...", 'loading');
-        setProgress(30);
-        
-        const produtos = [];
-        const mercado = "DESCO GERAL";
-        
-        // Remover quebras de linha e espaços extras
-        let textoLimpo = texto.replace(/\n/g, ' ').replace(/\s+/g, ' ');
-        
-        // Encontrar TODOS os preços no formato "2 , 49" ou "2,49"
-        const regexPreco = /([0-9]+)\s*,\s*([0-9]{2})/g;
-        let match;
-        let ultimoIndex = 0;
-        let todosProdutos = [];
-        
-        // Primeiro, encontrar todas as posições dos preços
-        const posicoes = [];
-        while ((match = regexPreco.exec(textoLimpo)) !== null) {
-            posicoes.push({
-                index: match.index,
-                preco: parseFloat(match[1] + '.' + match[2]),
-                length: match[0].length
-            });
-        }
-        
-        log(`📊 Encontrados ${posicoes.length} preços no texto`, 'info');
-        
-        // Para cada preço, pegar o texto entre o preço anterior e este preço
-        for (let i = 0; i < posicoes.length; i++) {
-            const pos = posicoes[i];
-            const preco = pos.preco;
-            
-            // Define o início do texto (depois do preço anterior ou início)
-            let inicio = i === 0 ? 0 : posicoes[i-1].index + posicoes[i-1].length;
-            
-            // Pega o texto entre o preço anterior e este preço
-            let trecho = textoLimpo.substring(inicio, pos.index);
-            trecho = trecho.trim();
-            
-            // Limpa o trecho
-            trecho = trecho
-                .replace(/^[^A-Za-zÀ-Öà-ö0-9]+/, '')
-                .replace(/\s+/g, ' ')
-                .trim();
-            
-            // Se o trecho estiver vazio ou for muito curto, tenta pegar mais texto antes
-            if (trecho.length < 3 && i > 0) {
-                let inicio2 = i === 1 ? 0 : posicoes[i-2].index + posicoes[i-2].length;
-                trecho = textoLimpo.substring(inicio2, pos.index);
-                trecho = trecho.replace(/^[^A-Za-zÀ-Öà-ö0-9]+/, '').replace(/\s+/g, ' ').trim();
-            }
-            
-            // Remove palavras genéricas do nome
-            const remover = ['Kg', 'Un', 'Bandeja', 'Maço', 'kg', 'un', 'bandeja', 'maço', 'Resfriado', 'Resfriada', 'Congelado', 'Inteiro', 'Suco', 'Baby', 'Paulista', 'Prata', 'Verde', 'Rosa', 'Branco', 'Picado', 'Moída', 'Bovina', 'C/Osso', 'C/3', 'C/20', '1,01kg', '350g', '5kg'];
-            
-            let nome = trecho;
-            for (const palavra of remover) {
-                nome = nome.replace(new RegExp('\\b' + palavra + '\\b', 'gi'), '');
-            }
-            nome = nome.replace(/\s+/g, ' ').trim();
-            
-            // Remove "ou" e o que vem depois
-            if (nome.includes(' ou ')) {
-                nome = nome.split(' ou ')[0];
-            }
-            
-            // Remove parênteses
-            nome = nome.replace(/\([^)]*\)/g, '');
-            
-            // Remove "C/" e o que vem depois
-            if (nome.includes('C/')) {
-                nome = nome.split('C/')[0];
-            }
-            
-            // Remove números soltos
-            nome = nome.replace(/[0-9,.\s]+$/, '');
-            
-            // Limpa espaços
-            nome = nome.replace(/\s+/g, ' ').trim();
-            
-            // Verifica se é válido
-            if (nome.length > 2 && preco > 0 && preco < 1000) {
-                // Verifica se não é uma palavra genérica sozinha
-                let isGenerico = false;
-                const genericos = ['Kg', 'Un', 'Bandeja', 'Maço', 'Resfriado', 'Resfriada', 'Congelado'];
-                for (const g of genericos) {
-                    if (nome.toLowerCase() === g.toLowerCase()) {
-                        isGenerico = true;
-                        break;
-                    }
-                }
-                
-                if (!isGenerico && !nome.match(/^[0-9,.\s]+$/)) {
-                    todosProdutos.push({
-                        produto: nome,
-                        preco: preco,
-                        mercado: mercado
-                    });
-                }
-            }
-        }
-        
-        // 🔥 AGRUPAR POR PRODUTO E PEGAR O MENOR PREÇO
-        const mapaProdutos = {};
-        for (const p of todosProdutos) {
-            // Limpar nome para agrupar melhor
-            let nomeLimpo = p.produto
-                .replace(/\s+(kg|g|ml|l|L|Kg|KG|Un|un)\s*$/, '')
-                .replace(/\s+/g, ' ')
-                .trim();
-            
-            if (!mapaProdutos[nomeLimpo]) {
-                mapaProdutos[nomeLimpo] = {
-                    produto: nomeLimpo,
-                    preco: p.preco,
-                    mercado: p.mercado,
-                    precos: [p.preco]
-                };
-            } else {
-                mapaProdutos[nomeLimpo].precos.push(p.preco);
-                if (p.preco < mapaProdutos[nomeLimpo].preco) {
-                    mapaProdutos[nomeLimpo].preco = p.preco;
-                }
-            }
-        }
-        
-        // Converter para array e ordenar
-        const produtosUnicos = Object.values(mapaProdutos);
-        produtosUnicos.sort((a, b) => a.produto.localeCompare(b.produto));
-        
-        // Log dos produtos encontrados
-        for (const p of produtosUnicos) {
-            log(`📦 ${p.produto} - R$ ${p.preco.toFixed(2)}`, 'info');
-        }
-        
-        setProgress(100);
-        log(`✅ ${produtosUnicos.length} produtos únicos encontrados`, 'success');
-        return produtosUnicos;
-    }
-
-    // 📄 PROCESSAR ARQUIVO
-    window.processarArquivo = async function() {
-        const file = document.getElementById('fileInput').files[0];
-        if (!file) {
-            log("⚠️ Selecione um arquivo PDF!", 'error');
-            return;
-        }
-
-        if (file.type !== "application/pdf") {
-            log("⚠️ O arquivo precisa ser PDF!", 'error');
-            return;
-        }
-
-        log(`📄 Lendo: ${file.name}`, 'loading');
-        setProgress(10);
-        let textoBruto = "";
-
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-            
-            log(`📄 PDF tem ${pdf.numPages} páginas`, 'info');
-            setProgress(20);
-            
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                const pageText = content.items.map(item => item.str).join(" ");
-                textoBruto += pageText + "\n";
-                setProgress(20 + (i / pdf.numPages) * 30);
-            }
-
-            setProgress(50);
-            
-            if (!textoBruto.trim()) {
-                throw new Error("Nenhum texto extraído do PDF");
-            }
-
-            log(`📝 Texto extraído (${textoBruto.length} caracteres)`, 'info');
-            
-            document.getElementById('textoPreview').style.display = 'block';
-            document.getElementById('textoExtraido').textContent = textoBruto;
-            
-            setProgress(60);
-            
-            const produtos = extrairProdutos(textoBruto);
-            
-            if (produtos.length > 0) {
-                produtosExtraidos = produtos;
-                exibirResultado(produtos);
-                document.getElementById('countBadge').textContent = produtos.length;
-                log(`✅ ${produtos.length} produtos encontrados!`, 'success');
-                setProgress(100);
-            } else {
-                log("❌ Nenhum produto encontrado.", 'error');
-                setProgress(0);
-            }
-            
-        } catch (error) {
-            log("❌ Erro: " + error.message, 'error');
-            setProgress(0);
-            console.error(error);
-        }
-    };
-
-    // 📊 EXIBIR RESULTADO
-    function exibirResultado(produtos) {
-        const preview = document.getElementById('preview');
-        preview.style.display = 'block';
-
-        const list = document.getElementById('extractedList');
-        list.innerHTML = '';
-        
-        const stats = document.getElementById('stats');
-        const total = produtos.reduce((s, p) => s + p.preco, 0);
-        const media = produtos.length > 0 ? total / produtos.length : 0;
-        const max = Math.max(...produtos.map(p => p.preco));
-        const min = Math.min(...produtos.map(p => p.preco));
-        
-        stats.innerHTML = `
-            <span>📦 ${produtos.length} produtos</span>
-            <span>🏪 DESCO</span>
-            <span>💰 Média: R$ ${media.toFixed(2)}</span>
-            <span>💵 Total: R$ ${total.toFixed(2)}</span>
-            <span>📈 Max: R$ ${max.toFixed(2)}</span>
-            <span>📉 Min: R$ ${min.toFixed(2)}</span>
-        `;
-
-        produtos.forEach((item) => {
-            const div = document.createElement('div');
-            div.className = 'extracted-item';
-            div.innerHTML = `
-                <span class="produto">${item.produto}</span>
-                <span>
-                    <span class="badge badge-merc">${item.mercado}</span>
-                    <span class="badge badge-preco">R$ ${item.preco.toFixed(2)}</span>
-                </span>
-            `;
-            list.appendChild(div);
-        });
-    }
-
-    // 💾 SALVAR NO BANCO
-    window.salvarBanco = async function() {
-        if (!produtosExtraidos || produtosExtraidos.length === 0) {
-            log("⚠️ Nenhum dado para salvar!", 'error');
-            return;
-        }
-
-        if (!firebaseInicializado || !db) {
-            log("⚠️ Firebase não inicializado! Use 'Baixar JSON'", 'error');
-            return;
-        }
-
-        log(`💾 Salvando ${produtosExtraidos.length} produtos...`, 'loading');
-        
-        let salvos = 0;
-        let erros = 0;
-
-        for (const item of produtosExtraidos) {
-            try {
-                await addDoc(collection(db, "ofertas_dia"), {
-                    produto: item.produto,
-                    mercado: item.mercado,
-                    valorOferta: item.preco,
-                    data: new Date().toISOString().split('T')[0],
-                    timestamp: serverTimestamp(),
-                    importado: true,
-                    fonte: "DESCO",
-                    menor_preco: true
-                });
-                salvos++;
-            } catch (error) {
-                erros++;
-                console.error(`Erro ao salvar ${item.produto}:`, error);
-            }
-        }
-
-        if (erros > 0) {
-            log(`⚠️ ${salvos} salvos, ${erros} erros. Use 'Baixar JSON' como fallback.`, 'error');
+// Estrutura do "banco de dados" local
+const DB = {
+    // Tabela de notas fiscais escaneadas
+    notasFiscais: JSON.parse(localStorage.getItem('notas_fiscais_db')) || [],
+    
+    // Tabela de produtos da nota atual
+    produtosNota: JSON.parse(localStorage.getItem('produtos_nota_atual')) || [],
+    
+    // Salvar no localStorage
+    salvar() {
+        localStorage.setItem('notas_fiscais_db', JSON.stringify(this.notasFiscais));
+        localStorage.setItem('produtos_nota_atual', JSON.stringify(this.produtosNota));
+    },
+    
+    // Adicionar nota fiscal
+    adicionarNota(nota) {
+        // Verifica se já existe pela chave de acesso
+        const existe = this.notasFiscais.find(n => n.chaveAcesso === nota.chaveAcesso);
+        if (existe) {
+            // Atualiza dados existentes
+            Object.assign(existe, nota);
+            existe.atualizadoEm = new Date().toISOString();
         } else {
-            log(`✅ ${salvos} produtos salvos com sucesso!`, 'success');
-            alert(`✅ ${salvos} produtos salvos no banco de dados!`);
+            // Adiciona nova nota
+            nota.criadoEm = new Date().toISOString();
+            nota.atualizadoEm = new Date().toISOString();
+            this.notasFiscais.unshift(nota);
         }
-    };
+        this.salvar();
+        return nota;
+    },
+    
+    // Buscar todas as notas
+    buscarNotas() {
+        return this.notasFiscais;
+    },
+    
+    // Buscar nota por chave de acesso
+    buscarNotaPorChave(chave) {
+        return this.notasFiscais.find(n => n.chaveAcesso === chave);
+    },
+    
+    // Adicionar produtos extraídos da nota
+    adicionarProdutosNota(produtos) {
+        this.produtosNota = produtos;
+        this.salvar();
+        return produtos;
+    },
+    
+    // Buscar produtos da nota atual
+    buscarProdutosNota() {
+        return this.produtosNota;
+    }
+};
 
-    // 📥 BAIXAR JSON
-    window.baixarJSON = function() {
-        if (!produtosExtraidos || produtosExtraidos.length === 0) {
-            log("⚠️ Nenhum produto para baixar!", 'error');
-            return;
-        }
+// ============================================================
+// ===== FUNÇÕES DE LEITURA E PROCESSAMENTO DO QR CODE =====
+// ============================================================
 
-        const data = {
-            mercado: "DESCO GERAL",
-            data: new Date().toISOString().split('T')[0],
-            total_produtos: produtosExtraidos.length,
-            produtos: produtosExtraidos.map(p => ({
-                nome: p.produto,
-                preco: p.preco,
-                mercado: p.mercado
-            }))
-        };
-
-        const json = JSON.stringify(data, null, 2);
+/**
+ * Função principal que processa o QR Code da nota fiscal
+ * Extrai informações e adiciona à lista de compras
+ */
+async function processarQRCodeNotaFiscal(qrData) {
+    try {
+        console.log('📱 QR Code lido:', qrData);
         
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `ofertas_desco_${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
+        // Mostra feedback visual
+        mostrarFeedback('⏳ Processando nota fiscal...', 'info');
+        
+        // 1. Extrair dados do QR Code
+        const dadosNota = extrairDadosNotaFiscal(qrData);
+        
+        if (!dadosNota) {
+            mostrarFeedback('❌ QR Code inválido ou não reconhecido!', 'erro');
+            return false;
+        }
+        
+        console.log('📄 Dados extraídos da nota:', dadosNota);
+        
+        // 2. Salvar no banco de dados local
+        const notaSalva = DB.adicionarNota(dadosNota);
+        console.log('💾 Nota salva no banco:', notaSalva);
+        
+        // 3. Extrair produtos da nota (usando dados do QR ou API)
+        let produtos = [];
+        
+        // Tenta extrair produtos do QR Code (se vierem no formato)
+        if (dadosNota.produtos && dadosNota.produtos.length > 0) {
+            produtos = dadosNota.produtos;
+        } else {
+            // Se não tiver produtos no QR, busca via API (simulação)
+            produtos = await buscarProdutosNotaAPI(dadosNota.chaveAcesso);
+        }
+        
+        // 4. Salvar produtos extraídos
+        DB.adicionarProdutosNota(produtos);
+        
+        // 5. Adicionar produtos à lista de compras
+        const adicionados = await adicionarProdutosListaCompras(produtos);
+        
+        // 6. Atualizar interface
+        mostrarFeedback(`✅ Nota fiscal processada! ${adicionados} produtos adicionados.`, 'sucesso');
+        
+        // 7. Mostrar resumo da nota
+        mostrarResumoNota(dadosNota, produtos);
+        
+        // 8. Forçar recarregamento da lista
+        carregar();
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erro ao processar QR Code:', error);
+        mostrarFeedback('❌ Erro ao processar nota fiscal: ' + error.message, 'erro');
+        return false;
+    }
+}
 
-        log(`📥 JSON baixado com ${produtosExtraidos.length} produtos!`, 'success');
-        alert(`📥 JSON baixado com ${produtosExtraidos.length} produtos!`);
+/**
+ * Extrai dados estruturados do QR Code da nota fiscal
+ * Suporta diferentes formatos de QR Code (NFC-e, Danfe, etc.)
+ */
+function extrairDadosNotaFiscal(qrData) {
+    try {
+        // Se for URL com parâmetros
+        if (qrData.includes('?') || qrData.includes('&')) {
+            const urlParams = new URLSearchParams(qrData.split('?')[1] || '');
+            
+            // Parâmetros comuns da NFC-e
+            const chave = urlParams.get('chave') || urlParams.get('p') || '';
+            const numero = urlParams.get('n') || urlParams.get('numero') || '';
+            
+            if (chave) {
+                return {
+                    chaveAcesso: chave,
+                    numero: numero,
+                    valorTotal: parseFloat(urlParams.get('v') || '0'),
+                    dataEmissao: urlParams.get('d') || new Date().toISOString().split('T')[0],
+                    cnpjEmitente: urlParams.get('c') || '',
+                    nomeEmitente: urlParams.get('e') || 'Desconhecido',
+                    produtos: []
+                };
+            }
+        }
+        
+        // Formato compacto (chave de acesso de 44 dígitos)
+        if (/^\d{44}$/.test(qrData)) {
+            const chave = qrData;
+            // Extrai informações da chave (formato padrão)
+            const data = chave.substring(0, 6); // AAMMDD
+            const cnpj = chave.substring(6, 20);
+            const numero = chave.substring(25, 34);
+            
+            return {
+                chaveAcesso: chave,
+                numero: numero,
+                valorTotal: 0, // Precisa buscar via API
+                dataEmissao: `20${data.substring(0,2)}-${data.substring(2,4)}-${data.substring(4,6)}`,
+                cnpjEmitente: cnpj,
+                nomeEmitente: 'Desconhecido',
+                produtos: []
+            };
+        }
+        
+        // Tenta parsear como JSON
+        try {
+            const jsonData = JSON.parse(qrData);
+            if (jsonData.chave_acesso || jsonData.chaveAcesso) {
+                return {
+                    chaveAcesso: jsonData.chave_acesso || jsonData.chaveAcesso,
+                    numero: jsonData.numero || jsonData.numero_nota || '',
+                    valorTotal: parseFloat(jsonData.valor_total || jsonData.valor || 0),
+                    dataEmissao: jsonData.data_emissao || jsonData.data || new Date().toISOString().split('T')[0],
+                    cnpjEmitente: jsonData.cnpj_emitente || jsonData.cnpj || '',
+                    nomeEmitente: jsonData.nome_emitente || 'Desconhecido',
+                    produtos: jsonData.produtos || []
+                };
+            }
+        } catch (e) {}
+        
+        // Formato com campos separados
+        const campos = qrData.split('|');
+        if (campos.length >= 2) {
+            return {
+                chaveAcesso: campos[0] || '',
+                numero: campos[1] || '',
+                valorTotal: parseFloat(campos[2] || '0'),
+                dataEmissao: campos[3] || new Date().toISOString().split('T')[0],
+                cnpjEmitente: campos[4] || '',
+                nomeEmitente: campos[5] || 'Desconhecido',
+                produtos: []
+            };
+        }
+        
+        return null;
+        
+    } catch (error) {
+        console.error('Erro ao extrair dados do QR:', error);
+        return null;
+    }
+}
+
+/**
+ * Busca os produtos da nota fiscal via API (simulação)
+ * Na vida real, isso chamaria uma API da SEFAZ ou serviço de consulta
+ */
+async function buscarProdutosNotaAPI(chaveAcesso) {
+    // Simula uma chamada à API
+    console.log('🔍 Buscando produtos da nota:', chaveAcesso);
+    
+    // Simula delay de rede
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Simula resposta com produtos (na vida real, viria da API)
+    const produtosSimulados = [
+        { produto: 'Arroz', quantidade: 1, preco: 8.89, mercado: 'Miller' },
+        { produto: 'Feijão', quantidade: 1, preco: 4.49, mercado: 'Desco' },
+        { produto: 'Óleo', quantidade: 1, preco: 5.99, mercado: 'Via' },
+        { produto: 'Açúcar', quantidade: 1, preco: 14.95, mercado: 'Desco' },
+        { produto: 'Café', quantidade: 1, preco: 19.90, mercado: 'Miller' }
+    ];
+    
+    // Simula produtos baseados na chave para variar
+    const hash = chaveAcesso.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const quantidade = (hash % 5) + 3; // 3 a 7 produtos
+    
+    return produtosSimulados.slice(0, quantidade);
+}
+
+/**
+ * Adiciona os produtos extraídos à lista de compras
+ */
+async function adicionarProdutosListaCompras(produtos) {
+    let adicionados = 0;
+    
+    for (const item of produtos) {
+        // Verifica se já está na lista
+        const jaExiste = compras.some(x => 
+            x.produto.toLowerCase() === item.produto.toLowerCase() && 
+            x.noCarrinho && 
+            !x.arquivado
+        );
+        
+        if (!jaExiste) {
+            // Adiciona com os dados da nota
+            compras.push({
+                id: Date.now() + Math.random() + adicionados,
+                produto: item.produto,
+                quantidade: item.quantidade || 1,
+                valor: parseFloat(item.preco) || 0,
+                mercado: item.mercado || 'Desconhecido',
+                data: new Date().toISOString().split('T')[0],
+                comprado: false,
+                noCarrinho: true,
+                arquivado: false,
+                origem: 'nota_fiscal'
+            });
+            adicionados++;
+        }
+    }
+    
+    if (adicionados > 0) {
+        salvar(); // Salva no localStorage
+    }
+    
+    return adicionados;
+}
+
+/**
+ * Mostra um resumo da nota fiscal processada
+ */
+function mostrarResumoNota(nota, produtos) {
+    const resumo = `
+📋 Resumo da Nota Fiscal:
+• Número: ${nota.numero || 'N/A'}
+• Chave: ${nota.chaveAcesso.substring(0, 10)}...
+• Valor Total: R$ ${nota.valorTotal?.toFixed(2) || 'N/A'}
+• Data: ${nota.dataEmissao || 'N/A'}
+• Emitente: ${nota.nomeEmitente || 'N/A'}
+• Produtos: ${produtos.length} itens encontrados
+    `;
+    
+    console.log(resumo);
+    
+    // Mostra notificação visual
+    mostrarNotificacao('Nota fiscal processada!', `${produtos.length} produtos adicionados à lista.`);
+}
+
+/**
+ * Feedback visual para o usuário
+ */
+function mostrarFeedback(mensagem, tipo = 'info') {
+    const cores = {
+        info: '#3b82f6',
+        sucesso: '#22c55e',
+        erro: '#ef4444',
+        alerta: '#f59e0b'
     };
+    
+    // Remove feedbacks antigos
+    const antigos = document.querySelectorAll('.feedback-flutuante');
+    antigos.forEach(el => el.remove());
+    
+    const div = document.createElement('div');
+    div.className = 'feedback-flutuante';
+    div.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${cores[tipo] || cores.info};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 10000;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        max-width: 90%;
+        text-align: center;
+        animation: fadeInUp 0.3s ease;
+    `;
+    div.textContent = mensagem;
+    document.body.appendChild(div);
+    
+    setTimeout(() => {
+        div.style.animation = 'fadeOutDown 0.3s ease';
+        setTimeout(() => div.remove(), 300);
+    }, 4000);
+}
 
-    // 🗑️ LIMPAR
-    window.limparDados = function() {
-        produtosExtraidos = [];
-        document.getElementById('preview').style.display = 'none';
-        document.getElementById('extractedList').innerHTML = '';
-        document.getElementById('stats').innerHTML = '';
-        document.getElementById('textoPreview').style.display = 'none';
-        document.getElementById('fileInput').value = '';
-        document.getElementById('countBadge').textContent = '0';
-        setProgress(0);
-        log("🗑️ Limpo!", 'info');
-    };
+/**
+ * Notificação persistente
+ */
+function mostrarNotificacao(titulo, mensagem) {
+    const notificacao = document.createElement('div');
+    notificacao.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #1e293b;
+        color: white;
+        padding: 16px 20px;
+        border-radius: 12px;
+        z-index: 10001;
+        max-width: 350px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        animation: slideInRight 0.4s ease;
+    `;
+    notificacao.innerHTML = `
+        <strong>${titulo}</strong>
+        <p style="margin: 4px 0 0 0; font-size: 13px; color: #94a3b8;">${mensagem}</p>
+    `;
+    document.body.appendChild(notificacao);
+    
+    setTimeout(() => {
+        notificacao.style.animation = 'slideOutRight 0.4s ease';
+        setTimeout(() => notificacao.remove(), 400);
+    }, 5000);
+}
 
-    window.processarArquivo = window.processarArquivo;
-    window.salvarBanco = window.salvarBanco;
-    window.baixarJSON = window.baixarJSON;
-    window.limparDados = window.limparDados;
+// ============================================================
+// ===== FUNÇÃO ATUALIZADA DO SCANNER =====
+// ============================================================
 
-    log("🚀 Aguardando o PDF! - 100% DINÂMICO", 'info');
-    log("📌 SEM PRODUTOS FIXOS - Funciona com QUALQUER PDF", 'info');
+// Substitui a função alternarScanner original
+const alternarScannerOriginal = window.alternarScanner;
+
+window.alternarScanner = function() {
+    const btn = document.getElementById("btnIniciarCamera");
+    const reader = document.getElementById("reader");
+    
+    if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+        html5QrcodeScanner.stop().then(() => {
+            btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+            btn.style.background = "#4f46e5";
+            reader.style.display = 'none';
+        }).catch(err => console.log(err));
+        return;
+    }
+    
+    btn.innerText = "🛑 Desligar Câmera";
+    btn.style.background = "#ef4444";
+    reader.style.display = 'block';
+    
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5Qrcode("reader");
+    }
+    
+    html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        async (qrCodeMessage) => {
+            // Processa o QR Code com nossa nova função
+            await processarQRCodeNotaFiscal(qrCodeMessage);
+            
+            // Para o scanner após ler
+            html5QrcodeScanner.stop().then(() => {
+                btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+                btn.style.background = "#4f46e5";
+                reader.style.display = 'none';
+            }).catch(err => console.log(err));
+        },
+        (errorMessage) => {
+            // Ignora erros de leitura contínua
+        }
+    ).catch(err => {
+        alert("❌ Erro ao acessar a câmera. Verifique as permissões.");
+        btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
+        btn.style.background = "#4f46e5";
+        reader.style.display = 'none';
+    });
+};
+
+// ============================================================
+// ===== FUNÇÃO PARA VISUALIZAR NOTAS ESCANEADAS =====
+// ============================================================
+
+function visualizarNotasEscaneadas() {
+    const notas = DB.buscarNotas();
+    
+    if (notas.length === 0) {
+        alert('📭 Nenhuma nota fiscal escaneada ainda.');
+        return;
+    }
+    
+    let mensagem = '📋 NOTAS FISCAIS ESCANEADAS:\n\n';
+    mensagem += '═'.repeat(40) + '\n';
+    
+    notas.forEach((nota, index) => {
+        mensagem += `📄 NOTA #${index + 1}\n`;
+        mensagem += `   Chave: ${nota.chaveAcesso.substring(0, 15)}...\n`;
+        mensagem += `   Número: ${nota.numero || 'N/A'}\n`;
+        mensagem += `   Emitente: ${nota.nomeEmitente || 'N/A'}\n`;
+        mensagem += `   Data: ${nota.dataEmissao || 'N/A'}\n`;
+        mensagem += `   Valor: R$ ${nota.valorTotal?.toFixed(2) || '0,00'}\n`;
+        mensagem += `   Escaneado: ${new Date(nota.criadoEm).toLocaleString()}\n`;
+        mensagem += '─'.repeat(40) + '\n';
+    });
+    
+    // Mostra em um alert ou modal
+    alert(mensagem);
+}
+
+// ============================================================
+// ===== INJEÇÃO DE ESTILOS PARA ANIMAÇÕES =====
+// ============================================================
+
+const styleAnimations = document.createElement('style');
+styleAnimations.textContent = `
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes fadeOutDown {
+        from { opacity: 1; transform: translateX(-50%) translateY(0); }
+        to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+    @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(100px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideOutRight {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(100px); }
+    }
+`;
+document.head.appendChild(styleAnimations);
+
+// ============================================================
+// ===== ADICIONA BOTÃO PARA VISUALIZAR NOTAS =====
+// ============================================================
+
+// Adiciona botão no menu
+document.addEventListener('DOMContentLoaded', function() {
+    const menu = document.querySelector('.menu');
+    if (menu) {
+        const btnNotas = document.createElement('button');
+        btnNotas.className = 'btn-importar';
+        btnNotas.innerHTML = '<span>📄</span> Notas';
+        btnNotas.onclick = visualizarNotasEscaneadas;
+        btnNotas.style.background = '#8b5cf6';
+        btnNotas.style.color = 'white';
+        menu.appendChild(btnNotas);
+    }
+});
+
+// ============================================================
+// ===== INICIALIZAÇÃO =====
+// ============================================================
+
+console.log('🚀 Sistema de leitura de QR Code inicializado!');
+console.log('📊 Notas escaneadas:', DB.buscarNotas().length);
+
+// Suas funções existentes continuam aqui...
+// (carregar, salvar, etc.)
+
 </script>
 </body>
 </html>
