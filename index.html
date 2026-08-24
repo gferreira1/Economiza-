@@ -1112,87 +1112,233 @@ function carregarGraficoHistorico() {
 }
 
 // ============================================================
-// ===== FUNÇÕES DO SCANNER - CORRIGIDAS (SEM PRODUTOS FALSOS) =====
+// ===== BUSCA PRODUTOS DA NOTA AUTOMATICAMENTE =====
+// ============================================================
+async function buscarProdutosDaNota(chaveAcesso) {
+    try {
+        mostrarFeedback('🔍 Buscando produtos da nota...', 'info');
+        
+        // Tenta consultar no site da SEFAZ (via scraping)
+        try {
+            var url = 'https://www.sefaz.rs.gov.br/NFCE/NFCE-COM.aspx?p=' + chaveAcesso + '|2|1|3|';
+            var response = await fetch(url);
+            var html = await response.text();
+            
+            var produtos = extrairProdutosDoHTML(html);
+            if (produtos && produtos.length > 0) {
+                return produtos;
+            }
+        } catch (e) {
+            console.log('❌ Erro ao buscar da SEFAZ:', e);
+        }
+        
+        // Tenta API do NFCE Ceará
+        try {
+            var urlApi = 'https://nfce.ceara.gov.br/nfce/consulta?chave=' + chaveAcesso;
+            var responseApi = await fetch(urlApi);
+            var dados = await responseApi.json();
+            
+            if (dados && dados.itens && dados.itens.length > 0) {
+                return dados.itens.map(function(item) {
+                    return {
+                        produto: item.descricao || item.nome || 'Produto',
+                        preco: parseFloat(item.valorUnitario || item.preco || 0),
+                        quantidade: parseInt(item.quantidade || 1),
+                        mercado: 'Nota Fiscal'
+                    };
+                });
+            }
+        } catch (e) {
+            console.log('❌ Erro na API do Ceará:', e);
+        }
+        
+        return null;
+        
+    } catch (error) {
+        console.error('❌ Erro ao buscar produtos:', error);
+        return null;
+    }
+}
+
+// ============================================================
+// ===== EXTRAI PRODUTOS DO HTML DA SEFAZ =====
+// ============================================================
+function extrairProdutosDoHTML(html) {
+    try {
+        var produtos = [];
+        
+        // Procura pela tabela de produtos
+        var tabelaRegex = /<table[^>]*class="[^"]*TabelaItens[^"]*"[^>]*>([\s\S]*?)<\/table>/i;
+        var match = html.match(tabelaRegex);
+        
+        if (match) {
+            var linhas = match[1].match(/<tr[^>]*>[\s\S]*?<\/tr>/gi);
+            if (linhas) {
+                for (var i = 1; i < linhas.length; i++) {
+                    var colunas = linhas[i].match(/<td[^>]*>([\s\S]*?)<\/td>/gi);
+                    if (colunas && colunas.length >= 4) {
+                        var nome = limparHTML(colunas[0]);
+                        var quantidade = parseFloat(limparHTML(colunas[1])) || 1;
+                        var preco = parseFloat(limparHTML(colunas[3]).replace(',', '.')) || 0;
+                        
+                        if (nome && nome.length > 1) {
+                            produtos.push({
+                                produto: nome,
+                                preco: preco,
+                                quantidade: quantidade,
+                                mercado: 'Nota Fiscal'
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        
+        return produtos;
+    } catch (e) {
+        console.log('Erro ao extrair HTML:', e);
+        return [];
+    }
+}
+
+function limparHTML(texto) {
+    if (!texto) return '';
+    return texto.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+}
+
+// ============================================================
+// ===== ADICIONA PRODUTOS MANUALMENTE =====
+// ============================================================
+async function adicionarProdutosManual() {
+    var produtos = [];
+    var continuar = true;
+    
+    while (continuar) {
+        var nome = prompt('📝 Digite o nome do produto (ou deixe em branco para finalizar):');
+        if (!nome || nome.trim() === '') {
+            continuar = false;
+            break;
+        }
+        
+        var preco = prompt('💰 Digite o preço do produto (ex: 10.90):');
+        if (!preco || preco.trim() === '') {
+            continuar = false;
+            break;
+        }
+        
+        var quantidade = prompt('📦 Digite a quantidade (ex: 1):') || '1';
+        
+        var mercado = prompt('🏪 Digite o mercado (ex: Desco, Miller, Via) ou deixe em branco:') || 'Desconhecido';
+        
+        produtos.push({
+            produto: nome.trim(),
+            preco: parseFloat(preco.replace(',', '.')) || 0,
+            quantidade: parseInt(quantidade) || 1,
+            mercado: mercado.trim() || 'Desconhecido'
+        });
+        
+        var mais = confirm('Deseja adicionar mais um produto?');
+        if (!mais) continuar = false;
+    }
+    
+    return produtos;
+}
+
+// ============================================================
+// ===== FUNÇÕES DO SCANNER =====
 // ============================================================
 async function processarQRCodeNotaFiscal(qrData) {
     try {
         console.log('📱 QR Code lido:', qrData);
         mostrarFeedback('⏳ Processando nota fiscal...', 'info');
         
-        // ===== EXTRAI DADOS REAIS DO QR CODE =====
+        // Extrai dados do QR Code
         var dadosNota = extrairDadosQRCodeReal(qrData);
         console.log('📄 Dados extraídos:', dadosNota);
         
-        // ===== SALVA NO FIRESTORE (SEM PRODUTOS FALSOS) =====
-        var docRef = await db.collection('notas_fiscais').add({
-            chaveAcesso: dadosNota.chaveAcesso,
-            numero: dadosNota.numero || 'N/A',
-            valorTotal: 0,
-            dataEmissao: dadosNota.dataEmissao || new Date().toISOString().split('T')[0],
-            cnpjEmitente: dadosNota.cnpjEmitente || 'N/A',
-            nomeEmitente: dadosNota.nomeEmitente || 'Nota Fiscal',
-            produtos: [],
-            criadoEm: new Date().toISOString()
-        });
+        // ===== TENTA BUSCAR PRODUTOS AUTOMATICAMENTE =====
+        var produtos = await buscarProdutosDaNota(dadosNota.chaveAcesso);
         
-        console.log('🔥 Nota salva no Firebase ID:', docRef.id);
-        mostrarFeedback('✅ Nota fiscal salva com sucesso!', 'sucesso');
-        
-        // ===== PERGUNTA SE QUER ADICIONAR PRODUTOS MANUALMENTE =====
-        var adicionarManual = confirm('⚠️ A nota fiscal não contém a lista de produtos no QR Code.\n\nDeseja adicionar os produtos manualmente?');
-        
-        if (adicionarManual) {
-            var produtosManual = await adicionarProdutosManual();
-            if (produtosManual && produtosManual.length > 0) {
-                // Atualiza a nota com os produtos manuais
-                var total = 0;
-                for (var i = 0; i < produtosManual.length; i++) {
-                    total += (produtosManual[i].preco || 0) * (produtosManual[i].quantidade || 1);
-                }
-                
-                await db.collection('notas_fiscais').doc(docRef.id).update({
-                    produtos: produtosManual,
-                    valorTotal: total
-                });
-                
-                // Adiciona à lista de compras
-                var adicionados = 0;
-                for (var j = 0; j < produtosManual.length; j++) {
-                    var item = produtosManual[j];
-                    var existe = false;
-                    for (var k = 0; k < compras.length; k++) {
-                        if (compras[k].produto.toLowerCase() === item.produto.toLowerCase() && 
-                            compras[k].noCarrinho && !compras[k].arquivado) {
-                            existe = true;
-                            break;
-                        }
-                    }
-                    
-                    if (!existe) {
-                        compras.push({
-                            id: Date.now() + Math.random() + adicionados,
-                            produto: item.produto,
-                            quantidade: item.quantidade || 1,
-                            valor: parseFloat(item.preco) || 0,
-                            mercado: item.mercado || 'Manual',
-                            data: dadosNota.dataEmissao || new Date().toISOString().split('T')[0],
-                            comprado: false,
-                            noCarrinho: true,
-                            arquivado: false,
-                            origem: 'manual_nota',
-                            notaId: docRef.id
-                        });
-                        adicionados++;
-                    }
-                }
-                
-                if (adicionados > 0) {
-                    salvar();
-                    mostrarFeedback('✅ ' + adicionados + ' produtos adicionados manualmente!', 'sucesso');
+        if (produtos && produtos.length > 0) {
+            dadosNota.produtos = produtos;
+            dadosNota.valorTotal = produtos.reduce(function(sum, p) {
+                return sum + (p.preco || 0) * (p.quantidade || 1);
+            }, 0);
+            mostrarFeedback('✅ ' + produtos.length + ' produtos encontrados na nota!', 'sucesso');
+        } else {
+            mostrarFeedback('⚠️ Não foi possível buscar os produtos automaticamente.', 'alerta');
+            
+            var adicionarManual = confirm('⚠️ Não foi possível extrair os produtos automaticamente.\n\nDeseja adicionar os produtos manualmente?');
+            if (!adicionarManual) {
+                dadosNota.produtos = [];
+                dadosNota.valorTotal = 0;
+            } else {
+                var produtosManual = await adicionarProdutosManual();
+                if (produtosManual && produtosManual.length > 0) {
+                    dadosNota.produtos = produtosManual;
+                    dadosNota.valorTotal = produtosManual.reduce(function(sum, p) {
+                        return sum + (p.preco || 0) * (p.quantidade || 1);
+                    }, 0);
+                } else {
+                    dadosNota.produtos = [];
+                    dadosNota.valorTotal = 0;
                 }
             }
         }
         
+        // Salva no Firebase
+        var docRef = await db.collection('notas_fiscais').add({
+            chaveAcesso: dadosNota.chaveAcesso,
+            numero: dadosNota.numero || 'N/A',
+            valorTotal: dadosNota.valorTotal || 0,
+            dataEmissao: dadosNota.dataEmissao || new Date().toISOString().split('T')[0],
+            cnpjEmitente: dadosNota.cnpjEmitente || 'N/A',
+            nomeEmitente: dadosNota.nomeEmitente || 'Nota Fiscal',
+            produtos: dadosNota.produtos || [],
+            criadoEm: new Date().toISOString()
+        });
+        
+        console.log('🔥 Nota salva no Firebase ID:', docRef.id);
+        
+        // Adiciona produtos à lista de compras
+        if (dadosNota.produtos && dadosNota.produtos.length > 0) {
+            var adicionados = 0;
+            for (var i = 0; i < dadosNota.produtos.length; i++) {
+                var item = dadosNota.produtos[i];
+                var existe = false;
+                for (var j = 0; j < compras.length; j++) {
+                    if (compras[j].produto.toLowerCase() === item.produto.toLowerCase() && 
+                        compras[j].noCarrinho && !compras[j].arquivado) {
+                        existe = true;
+                        break;
+                    }
+                }
+                
+                if (!existe) {
+                    compras.push({
+                        id: Date.now() + Math.random() + adicionados,
+                        produto: item.produto,
+                        quantidade: item.quantidade || 1,
+                        valor: parseFloat(item.preco) || 0,
+                        mercado: item.mercado || 'Nota Fiscal',
+                        data: dadosNota.dataEmissao || new Date().toISOString().split('T')[0],
+                        comprado: false,
+                        noCarrinho: true,
+                        arquivado: false,
+                        origem: 'nota_fiscal',
+                        notaId: docRef.id
+                    });
+                    adicionados++;
+                }
+            }
+            
+            if (adicionados > 0) {
+                salvar();
+                mostrarFeedback('✅ ' + adicionados + ' produtos adicionados à lista!', 'sucesso');
+            }
+        }
+        
+        mostrarFeedback('✅ Nota fiscal processada com sucesso!', 'sucesso');
         carregar();
         return true;
         
@@ -1203,9 +1349,6 @@ async function processarQRCodeNotaFiscal(qrData) {
     }
 }
 
-// ============================================================
-// ===== EXTRAI DADOS REAIS DO QR CODE (SEM PRODUTOS FALSOS) =====
-// ============================================================
 function extrairDadosQRCodeReal(qrData) {
     try {
         var dados = {
@@ -1265,44 +1408,6 @@ function extrairDadosQRCodeReal(qrData) {
 }
 
 // ============================================================
-// ===== ADICIONA PRODUTOS MANUALMENTE =====
-// ============================================================
-async function adicionarProdutosManual() {
-    var produtos = [];
-    var continuar = true;
-    
-    while (continuar) {
-        var nome = prompt('📝 Digite o nome do produto (ou deixe em branco para finalizar):');
-        if (!nome || nome.trim() === '') {
-            continuar = false;
-            break;
-        }
-        
-        var preco = prompt('💰 Digite o preço do produto (ex: 10.90):');
-        if (!preco || preco.trim() === '') {
-            continuar = false;
-            break;
-        }
-        
-        var quantidade = prompt('📦 Digite a quantidade (ex: 1):') || '1';
-        
-        var mercado = prompt('🏪 Digite o mercado (ex: Desco, Miller, Via) ou deixe em branco:') || 'Desconhecido';
-        
-        produtos.push({
-            produto: nome.trim(),
-            preco: parseFloat(preco.replace(',', '.')) || 0,
-            quantidade: parseInt(quantidade) || 1,
-            mercado: mercado.trim() || 'Desconhecido'
-        });
-        
-        var mais = confirm('Deseja adicionar mais um produto?');
-        if (!mais) continuar = false;
-    }
-    
-    return produtos;
-}
-
-// ============================================================
 // ===== FUNÇÕES DO SCANNER =====
 // ============================================================
 window.alternarScanner = function() {
@@ -1345,13 +1450,6 @@ window.alternarScanner = function() {
         reader.style.display = 'none';
     });
 };
-
-function mostrarResumoNota(nota) {
-    console.log('📋 Resumo da Nota Fiscal:');
-    console.log('   Chave:', nota.chaveAcesso?.substring(0, 20) || 'N/A', '...');
-    console.log('   Número:', nota.numero || 'N/A');
-    console.log('   Data:', nota.dataEmissao || 'N/A');
-}
 
 // ============================================================
 // ===== FUNÇÕES PRINCIPAIS DO SISTEMA =====
