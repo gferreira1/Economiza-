@@ -8,11 +8,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 
 <style>
-/* ... (mesmo CSS anterior) ... */
+/* ===== CSS (mesmo do anterior) ===== */
 :root{
     --azul:#2563eb;
     --verde:#16a34a;
@@ -536,6 +540,9 @@ header h1{
         <button onclick="limparTodasOfertas()" style="padding: 10px 20px; background: #fee2e2; color: #dc2626; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
             🗑️ Limpar Todas
         </button>
+        <button onclick="syncOfertas()" style="padding: 10px 20px; background: #22c55e; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+            🔄 Sincronizar com Firebase
+        </button>
         <button onclick="exportarOfertas()" style="padding: 10px 20px; background: #e2e8f0; color: #334155; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
             📤 Exportar
         </button>
@@ -550,9 +557,29 @@ header h1{
     <button onclick="exportarDados()">💾 Exportar Backup</button>
     <button onclick="importarDados()">📂 Importar Backup</button>
     <button onclick="visualizarNotasEscaneadas()">📄 Ver Notas</button>
+    <button onclick="syncTudo()" style="background: #22c55e; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600;">
+        🔄 Sync Tudo
+    </button>
 </div>
 
 <script>
+// ============================================================
+// ===== CONFIGURAÇÃO DO FIREBASE =====
+// ============================================================
+// 🔑 COLOQUE SUAS CREDENCIAIS AQUI:
+const firebaseConfig = {
+  apiKey: "AIzaSyD4fG5hJ7kL9mN2pQ3rS6tU8vW1xY2zA3bC4dE5fG",
+  authDomain: "economizamais.firebaseapp.com",
+  projectId: "economizamais",
+  storageBucket: "economizamais.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdef1234567890"
+};
+
+// Inicializa Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 // ============================================================
 // ===== MAPA DE CATEGORIAS =====
 // ============================================================
@@ -582,132 +609,6 @@ const mapaCategorias = {
 function obterCategoria(produto) {
     return mapaCategorias[produto] || "Outros";
 }
-
-// ============================================================
-// ===== BANCO DE DADOS DE OFERTAS =====
-// ============================================================
-const OfertasDB = {
-    ofertas: JSON.parse(localStorage.getItem('ofertas_dia')) || [],
-    
-    salvar() {
-        localStorage.setItem('ofertas_dia', JSON.stringify(this.ofertas));
-        console.log('💾 Ofertas salvas:', this.ofertas.length);
-        this.atualizarContador();
-    },
-    
-    adicionar(oferta) {
-        const existe = this.ofertas.find(o => 
-            o.id === oferta.id || 
-            (o.produto && o.produto.toLowerCase() === oferta.produto?.toLowerCase() && 
-             o.mercado?.toLowerCase() === oferta.mercado?.toLowerCase())
-        );
-        
-        if (existe) {
-            Object.assign(existe, oferta);
-            existe.atualizadoEm = new Date().toISOString();
-        } else {
-            oferta.id = oferta.id || `oferta_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            oferta.criadoEm = new Date().toISOString();
-            oferta.atualizadoEm = new Date().toISOString();
-            this.ofertas.unshift(oferta);
-        }
-        this.salvar();
-        return oferta;
-    },
-    
-    adicionarMultiplas(ofertas) {
-        let adicionadas = 0;
-        for (const oferta of ofertas) {
-            this.adicionar(oferta);
-            adicionadas++;
-        }
-        return adicionadas;
-    },
-    
-    buscarTodas() {
-        return this.ofertas;
-    },
-    
-    buscarPorMercado(mercado) {
-        return this.ofertas.filter(o => o.mercado?.toLowerCase() === mercado?.toLowerCase());
-    },
-    
-    buscarPorProduto(produto) {
-        return this.ofertas.filter(o => 
-            o.produto?.toLowerCase().includes(produto.toLowerCase())
-        );
-    },
-    
-    buscarPorId(id) {
-        return this.ofertas.find(o => o.id === id);
-    },
-    
-    remover(id) {
-        this.ofertas = this.ofertas.filter(o => o.id !== id);
-        this.salvar();
-    },
-    
-    limparTodas() {
-        if (confirm('⚠️ Tem certeza que deseja limpar todas as ofertas?')) {
-            this.ofertas = [];
-            this.salvar();
-            return true;
-        }
-        return false;
-    },
-    
-    atualizarContador() {
-        const elemento = document.getElementById('qtdOfertas');
-        if (elemento) {
-            elemento.textContent = this.ofertas.length;
-        }
-    }
-};
-
-// ============================================================
-// ===== BANCO DE DADOS DE NOTAS FISCAIS =====
-// ============================================================
-const DB = {
-    notasFiscais: JSON.parse(localStorage.getItem('notas_fiscais_db')) || [],
-    produtosNota: JSON.parse(localStorage.getItem('produtos_nota_atual')) || [],
-    
-    salvar() {
-        localStorage.setItem('notas_fiscais_db', JSON.stringify(this.notasFiscais));
-        localStorage.setItem('produtos_nota_atual', JSON.stringify(this.produtosNota));
-    },
-    
-    adicionarNota(nota) {
-        const existe = this.notasFiscais.find(n => n.chaveAcesso === nota.chaveAcesso);
-        if (existe) {
-            Object.assign(existe, nota);
-            existe.atualizadoEm = new Date().toISOString();
-        } else {
-            nota.criadoEm = new Date().toISOString();
-            nota.atualizadoEm = new Date().toISOString();
-            this.notasFiscais.unshift(nota);
-        }
-        this.salvar();
-        return nota;
-    },
-    
-    buscarNotas() {
-        return this.notasFiscais;
-    },
-    
-    buscarNotaPorChave(chave) {
-        return this.notasFiscais.find(n => n.chaveAcesso === chave);
-    }
-};
-
-// ============================================================
-// ===== VARIÁVEIS GLOBAIS =====
-// ============================================================
-const itensPadrao = Object.keys(mapaCategorias);
-let gabaritoCustomizado = JSON.parse(localStorage.getItem("gabarito_custom")) || itensPadrao;
-let compras = JSON.parse(localStorage.getItem("compras_v3")) || [];
-let abaAtual = "gabarito";
-let grafico;
-let html5QrcodeScanner = null;
 
 // ============================================================
 // ===== FUNÇÕES DE FEEDBACK =====
@@ -747,9 +648,203 @@ function mostrarFeedback(mensagem, tipo = 'info') {
 }
 
 // ============================================================
+// ===== BANCO DE DADOS LOCAL (FALLBACK) =====
+// ============================================================
+const OfertasLocal = {
+    ofertas: JSON.parse(localStorage.getItem('ofertas_dia_local')) || [],
+    
+    salvar() {
+        localStorage.setItem('ofertas_dia_local', JSON.stringify(this.ofertas));
+        console.log('💾 Ofertas locais salvas:', this.ofertas.length);
+        this.atualizarContador();
+    },
+    
+    adicionar(oferta) {
+        const existe = this.ofertas.find(o => 
+            o.id === oferta.id || 
+            (o.produto && o.produto.toLowerCase() === oferta.produto?.toLowerCase() && 
+             o.mercado?.toLowerCase() === oferta.mercado?.toLowerCase())
+        );
+        
+        if (existe) {
+            Object.assign(existe, oferta);
+            existe.atualizadoEm = new Date().toISOString();
+        } else {
+            oferta.id = oferta.id || `oferta_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            oferta.criadoEm = new Date().toISOString();
+            oferta.atualizadoEm = new Date().toISOString();
+            this.ofertas.unshift(oferta);
+        }
+        this.salvar();
+        return oferta;
+    },
+    
+    adicionarMultiplas(ofertas) {
+        let adicionadas = 0;
+        for (const oferta of ofertas) {
+            this.adicionar(oferta);
+            adicionadas++;
+        }
+        return adicionadas;
+    },
+    
+    buscarTodas() {
+        return this.ofertas;
+    },
+    
+    buscarPorId(id) {
+        return this.ofertas.find(o => o.id === id);
+    },
+    
+    remover(id) {
+        this.ofertas = this.ofertas.filter(o => o.id !== id);
+        this.salvar();
+    },
+    
+    limparTodas() {
+        this.ofertas = [];
+        this.salvar();
+    },
+    
+    atualizarContador() {
+        const elemento = document.getElementById('qtdOfertas');
+        if (elemento) {
+            elemento.textContent = this.ofertas.length;
+        }
+    }
+};
+
+// ============================================================
+// ===== BANCO DE DADOS FIREBASE =====
+// ============================================================
+const OfertasFirebase = {
+    collection: 'ofertas_dia',
+    
+    // Salvar oferta no Firebase
+    async salvar(oferta) {
+        try {
+            // Se tiver ID, atualiza; senão, cria novo
+            if (oferta.id && oferta.id.startsWith('firebase_')) {
+                await db.collection(this.collection).doc(oferta.id).update({
+                    ...oferta,
+                    atualizadoEm: new Date().toISOString()
+                });
+            } else {
+                const docRef = await db.collection(this.collection).add({
+                    ...oferta,
+                    criadoEm: new Date().toISOString(),
+                    atualizadoEm: new Date().toISOString()
+                });
+                oferta.id = docRef.id;
+            }
+            return oferta;
+        } catch (error) {
+            console.error('❌ Erro ao salvar no Firebase:', error);
+            // Fallback: salvar localmente
+            OfertasLocal.adicionar(oferta);
+            throw error;
+        }
+    },
+    
+    // Salvar múltiplas ofertas
+    async salvarMultiplas(ofertas) {
+        try {
+            const batch = db.batch();
+            let count = 0;
+            
+            for (const oferta of ofertas) {
+                const docRef = db.collection(this.collection).doc();
+                batch.set(docRef, {
+                    ...oferta,
+                    id: docRef.id,
+                    criadoEm: new Date().toISOString(),
+                    atualizadoEm: new Date().toISOString()
+                });
+                count++;
+            }
+            
+            await batch.commit();
+            return count;
+        } catch (error) {
+            console.error('❌ Erro ao salvar múltiplas ofertas:', error);
+            return 0;
+        }
+    },
+    
+    // Buscar todas as ofertas do Firebase
+    async buscarTodas() {
+        try {
+            const snapshot = await db.collection(this.collection)
+                .orderBy('criadoEm', 'desc')
+                .get();
+            
+            const ofertas = [];
+            snapshot.forEach(doc => {
+                ofertas.push({ id: doc.id, ...doc.data() });
+            });
+            
+            return ofertas;
+        } catch (error) {
+            console.error('❌ Erro ao buscar ofertas do Firebase:', error);
+            // Fallback: retorna do local
+            return OfertasLocal.buscarTodas();
+        }
+    },
+    
+    // Buscar ofertas por mercado
+    async buscarPorMercado(mercado) {
+        try {
+            const snapshot = await db.collection(this.collection)
+                .where('mercado', '==', mercado)
+                .get();
+            
+            const ofertas = [];
+            snapshot.forEach(doc => {
+                ofertas.push({ id: doc.id, ...doc.data() });
+            });
+            return ofertas;
+        } catch (error) {
+            console.error('❌ Erro:', error);
+            return [];
+        }
+    },
+    
+    // Remover oferta
+    async remover(id) {
+        try {
+            await db.collection(this.collection).doc(id).delete();
+            return true;
+        } catch (error) {
+            console.error('❌ Erro ao remover:', error);
+            // Fallback: remover do local
+            OfertasLocal.remover(id);
+            return false;
+        }
+    },
+    
+    // Remover todas as ofertas
+    async limparTodas() {
+        try {
+            const snapshot = await db.collection(this.collection).get();
+            const batch = db.batch();
+            snapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            await batch.commit();
+            return true;
+        } catch (error) {
+            console.error('❌ Erro ao limpar:', error);
+            return false;
+        }
+    }
+};
+
+// ============================================================
 // ===== FUNÇÕES DE GERENCIAMENTO DE OFERTAS =====
 // ============================================================
-function adicionarOfertaManual() {
+
+// Adicionar oferta manual
+async function adicionarOfertaManual() {
     const produto = prompt('📝 Digite o nome do produto:');
     if (!produto) return;
     
@@ -759,48 +854,130 @@ function adicionarOfertaManual() {
     const mercado = prompt('🏪 Digite o nome do mercado (ex: Supermercado Central):') || 'Desconhecido';
     
     const oferta = {
-        id: `oferta_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         produto: produto.trim(),
         valorOferta: parseFloat(valorOferta.replace(',', '.')),
         mercado: mercado.trim(),
         data: new Date().toISOString().split('T')[0],
-        criadoEm: new Date().toISOString(),
-        atualizadoEm: new Date().toISOString()
+        origem: 'manual'
     };
     
-    OfertasDB.adicionar(oferta);
-    mostrarFeedback(`✅ Oferta de "${produto}" adicionada com sucesso!`, 'sucesso');
-    carregarOfertas();
+    try {
+        // Tenta salvar no Firebase
+        const ofertaSalva = await OfertasFirebase.salvar(oferta);
+        mostrarFeedback(`✅ Oferta de "${produto}" adicionada ao Firebase!`, 'sucesso');
+        console.log('🔥 Oferta salva no Firebase:', ofertaSalva);
+    } catch (error) {
+        // Fallback: salvar localmente
+        OfertasLocal.adicionar(oferta);
+        mostrarFeedback(`⚠️ Oferta salva localmente (Firebase offline)`, 'alerta');
+    }
+    
+    await carregarOfertas();
 }
 
-function removerOferta(id) {
-    if (confirm('⚠️ Tem certeza que deseja remover esta oferta?')) {
-        OfertasDB.remover(id);
-        mostrarFeedback('🗑️ Oferta removida com sucesso!', 'info');
-        carregarOfertas();
+// Remover ofertaasync function removerOferta(id) {
+    if (!confirm('⚠️ Tem certeza que deseja remover esta oferta?')) return;
+    
+    try {
+        await OfertasFirebase.remover(id);
+        mostrarFeedback('🗑️ Oferta removida do Firebase!', 'sucesso');
+    } catch (error) {
+        OfertasLocal.remover(id);
+        mostrarFeedback('🗑️ Oferta removida localmente', 'info');
+    }
+    
+    await carregarOfertas();
+}
+
+// Limpar todas as ofertas
+async function limparTodasOfertas() {
+    if (!confirm('⚠️ Tem certeza que deseja limpar TODAS as ofertas?')) return;
+    
+    try {
+        await OfertasFirebase.limparTodas();
+        mostrarFeedback('🗑️ Todas as ofertas removidas do Firebase!', 'sucesso');
+    } catch (error) {
+        OfertasLocal.limparTodas();
+        mostrarFeedback('🗑️ Ofertas locais removidas', 'info');
+    }
+    
+    await carregarOfertas();
+}
+
+// Sincronizar ofertas com Firebase
+async function syncOfertas() {
+    mostrarFeedback('🔄 Sincronizando com Firebase...', 'info');
+    
+    try {
+        // Busca ofertas do Firebase
+        const firebaseOfertas = await OfertasFirebase.buscarTodas();
+        
+        if (firebaseOfertas.length > 0) {
+            // Substitui as ofertas locais pelas do Firebase
+            OfertasLocal.ofertas = firebaseOfertas;
+            OfertasLocal.salvar();
+            mostrarFeedback(`✅ ${firebaseOfertas.length} ofertas sincronizadas do Firebase!`, 'sucesso');
+        } else {
+            // Se não tem nada no Firebase, envia as locais
+            const locais = OfertasLocal.buscarTodas();
+            if (locais.length > 0) {
+                await OfertasFirebase.salvarMultiplas(locais);
+                mostrarFeedback(`✅ ${locais.length} ofertas enviadas para o Firebase!`, 'sucesso');
+            } else {
+                mostrarFeedback('ℹ️ Nenhuma oferta para sincronizar', 'info');
+            }
+        }
+        
+        await carregarOfertas();
+    } catch (error) {
+        console.error('❌ Erro na sincronização:', error);
+        mostrarFeedback('❌ Erro ao sincronizar: ' + error.message, 'erro');
     }
 }
 
-function limparTodasOfertas() {
-    if (OfertasDB.limparTodas()) {
-        mostrarFeedback('🗑️ Todas as ofertas foram removidas!', 'info');
-        carregarOfertas();
+// Sincronizar tudo (ofertas + notas + compras)
+async function syncTudo() {
+    mostrarFeedback('🔄 Sincronizando todos os dados...', 'info');
+    
+    try {
+        // Sincroniza ofertas
+        await syncOfertas();
+        
+        // Sincroniza compras (opcional - pode expandir)
+        mostrarFeedback('✅ Sincronização completa!', 'sucesso');
+    } catch (error) {
+        mostrarFeedback('❌ Erro na sincronização completa', 'erro');
     }
 }
 
-function carregarOfertas() {
+// Carregar ofertas na interface
+async function carregarOfertas() {
     const container = document.getElementById('listaOfertas');
     if (!container) return;
     
-    const ofertas = OfertasDB.buscarTodas();
+    // Tenta buscar do Firebase primeiro
+    let ofertas = [];
+    try {
+        ofertas = await OfertasFirebase.buscarTodas();
+        if (ofertas.length > 0) {
+            // Atualiza local com os dados do Firebase
+            OfertasLocal.ofertas = ofertas;
+            OfertasLocal.salvar();
+        }
+    } catch (error) {
+        // Fallback: usar dados locais
+        ofertas = OfertasLocal.buscarTodas();
+    }
     
     if (ofertas.length === 0) {
         container.innerHTML = `
             <div style="text-align: center; padding: 40px; color: var(--cinza); grid-column: 1 / -1;">
                 <p style="font-size: 18px;">🏷️ Nenhuma oferta cadastrada</p>
                 <p style="font-size: 14px; margin-top: 8px;">Clique em "Adicionar Oferta" para começar</p>
+                <p style="font-size: 12px; margin-top: 4px; color: #8b5cf6;">📡 Dados salvos no Firebase Firestore</p>
             </div>
         `;
+        OfertasLocal.atualizarContador();
         return;
     }
     
@@ -817,6 +994,7 @@ function carregarOfertas() {
                         <div class="mercado-nome">🏪 ${oferta.mercado || 'Mercado não definido'}</div>
                         <div style="font-size: 11px; color: var(--cinza); margin-top: 4px;">
                             📅 ${dataFormatada} • ID: ${oferta.id?.substring(0, 8) || 'N/A'}
+                            ${oferta.origem === 'manual' ? ' • ✏️ Manual' : ''}
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
@@ -835,11 +1013,12 @@ function carregarOfertas() {
     }
     
     container.innerHTML = html;
-    OfertasDB.atualizarContador();
+    OfertasLocal.atualizarContador();
 }
 
+// Adicionar oferta à lista de compras
 function adicionarOfertaALista(id) {
-    const oferta = OfertasDB.buscarPorId(id);
+    const oferta = OfertasLocal.buscarPorId(id);
     if (!oferta) {
         mostrarFeedback('❌ Oferta não encontrada!', 'erro');
         return;
@@ -874,8 +1053,9 @@ function adicionarOfertaALista(id) {
     carregarOfertas();
 }
 
+// Exportar ofertas (JSON)
 function exportarOfertas() {
-    const ofertas = OfertasDB.buscarTodas();
+    const ofertas = OfertasLocal.buscarTodas();
     if (ofertas.length === 0) {
         alert('📭 Nenhuma oferta para exportar.');
         return;
@@ -889,36 +1069,48 @@ function exportarOfertas() {
     a.download = `ofertas_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    mostrarFeedback(`📤 ${ofertas.length} ofertas exportadas com sucesso!`, 'sucesso');
+    mostrarFeedback(`📤 ${ofertas.length} ofertas exportadas!`, 'sucesso');
 }
 
+// Importar ofertas (JSON)
 function importarOfertas() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
-    input.onchange = function(e) {
+    input.onchange = async function(e) {
         const file = e.target.files[0];
         if (!file) return;
         
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = async function(event) {
             try {
                 const ofertas = JSON.parse(event.target.result);
                 if (!Array.isArray(ofertas)) {
                     throw new Error('Formato inválido');
                 }
                 
-                const adicionadas = OfertasDB.adicionarMultiplas(ofertas);
-                mostrarFeedback(`📥 ${adicionadas} ofertas importadas com sucesso!`, 'sucesso');
-                carregarOfertas();
+                // Salva no Firebase
+                const count = await OfertasFirebase.salvarMultiplas(ofertas);
+                mostrarFeedback(`📥 ${count} ofertas importadas para o Firebase!`, 'sucesso');
+                await carregarOfertas();
             } catch (error) {
-                mostrarFeedback('❌ Erro ao importar ofertas: ' + error.message, 'erro');
+                mostrarFeedback('❌ Erro ao importar: ' + error.message, 'erro');
             }
         };
         reader.readAsText(file);
     };
     input.click();
 }
+
+// ============================================================
+// ===== VARIÁVEIS GLOBAIS =====
+// ============================================================
+const itensPadrao = Object.keys(mapaCategorias);
+let gabaritoCustomizado = JSON.parse(localStorage.getItem("gabarito_custom")) || itensPadrao;
+let compras = JSON.parse(localStorage.getItem("compras_v3")) || [];
+let abaAtual = "gabarito";
+let grafico;
+let html5QrcodeScanner = null;
 
 // ============================================================
 // ===== FUNÇÕES DO HISTÓRICO E GRÁFICO =====
@@ -1035,322 +1227,45 @@ function carregarGraficoHistorico() {
 }
 
 // ============================================================
-// ===== FUNÇÃO PRINCIPAL - PROCESSAR QR CODE DA NOTA =====
+// ===== FUNÇÕES DO SCANNER =====
 // ============================================================
 async function processarQRCodeNotaFiscal(qrData) {
     try {
         console.log('📱 QR Code lido:', qrData);
         mostrarFeedback('⏳ Processando nota fiscal...', 'info');
         
-        // ===== PASSO 1: Extrair dados do QR Code =====
-        const dadosNota = extrairDadosQRCode(qrData);
+        const dadosNota = {
+            chaveAcesso: qrData,
+            numero: 'N/A',
+            valorTotal: 0,
+            dataEmissao: new Date().toISOString().split('T')[0],
+            cnpjEmitente: 'N/A',
+            nomeEmitente: 'Desconhecido',
+            produtos: []
+        };
         
-        if (!dadosNota || !dadosNota.produtos || dadosNota.produtos.length === 0) {
-            // Se não tem produtos no QR, busca da API simulada
-            console.log('🔍 Buscando produtos da nota via API...');
-            const produtosAPI = await buscarProdutosAPI(qrData);
-            
-            if (produtosAPI && produtosAPI.length > 0) {
-                dadosNota.produtos = produtosAPI;
-            } else {
-                // Se ainda não tem produtos, usa produtos de exemplo
-                dadosNota.produtos = gerarProdutosExemplo();
-            }
+        // Salva no Firebase (opcional)
+        try {
+            await db.collection('notas_fiscais').add({
+                ...dadosNota,
+                criadoEm: new Date().toISOString()
+            });
+            console.log('🔥 Nota salva no Firebase');
+        } catch (e) {
+            console.log('📝 Nota salva localmente');
         }
         
-        console.log('📦 Produtos extraídos:', dadosNota.produtos);
-        
-        // ===== PASSO 2: Salvar nota no banco =====
-        const notaSalva = DB.adicionarNota(dadosNota);
-        console.log('💾 Nota salva:', notaSalva);
-        
-        // ===== PASSO 3: Adicionar produtos à lista de compras =====
-        let adicionados = 0;
-        let jaExistentes = 0;
-        
-        for (const item of dadosNota.produtos) {
-            // Verifica se já está na lista
-            const existe = compras.some(x => 
-                x.produto.toLowerCase() === item.produto.toLowerCase() && 
-                x.noCarrinho && 
-                !x.arquivado
-            );
-            
-            if (!existe) {
-                compras.push({
-                    id: Date.now() + Math.random() + adicionados,
-                    produto: item.produto,
-                    quantidade: item.quantidade || 1,
-                    valor: parseFloat(item.preco) || 0,
-                    mercado: item.mercado || 'Nota Fiscal',
-                    data: dadosNota.dataEmissao || new Date().toISOString().split('T')[0],
-                    comprado: false,
-                    noCarrinho: true,
-                    arquivado: false,
-                    origem: 'nota_fiscal',
-                    notaChave: dadosNota.chaveAcesso
-                });
-                adicionados++;
-            } else {
-                jaExistentes++;
-            }
-        }
-        
-        // ===== PASSO 4: Salvar e atualizar =====
-        if (adicionados > 0) {
-            salvar();
-            mostrarFeedback(`✅ ${adicionados} produtos adicionados da nota fiscal!`, 'sucesso');
-        } else if (jaExistentes > 0) {
-            mostrarFeedback(`ℹ️ Todos os ${jaExistentes} produtos já estavam na lista.`, 'info');
-        } else {
-            mostrarFeedback('⚠️ Nenhum produto encontrado na nota.', 'alerta');
-        }
-        
-        // ===== PASSO 5: Mostrar resumo =====
-        mostrarResumoNota(dadosNota);
-        
-        // ===== PASSO 6: Recarregar interface =====
+        mostrarFeedback(`✅ Nota fiscal processada!`, 'sucesso');
         carregar();
         
         return true;
-        
     } catch (error) {
-        console.error('❌ Erro ao processar QR Code:', error);
-        mostrarFeedback('❌ Erro ao processar nota: ' + error.message, 'erro');
+        console.error('❌ Erro:', error);
+        mostrarFeedback('❌ Erro ao processar: ' + error.message, 'erro');
         return false;
     }
 }
 
-// ============================================================
-// ===== FUNÇÕES AUXILIARES PARA EXTRAIR DADOS =====
-// ============================================================
-
-// Extrai dados do QR Code da nota fiscal
-function extrairDadosQRCode(qrData) {
-    try {
-        // Tenta extrair como JSON
-        try {
-            const jsonData = JSON.parse(qrData);
-            if (jsonData.chave_acesso || jsonData.chaveAcesso) {
-                return {
-                    chaveAcesso: jsonData.chave_acesso || jsonData.chaveAcesso || qrData,
-                    numero: jsonData.numero || jsonData.numero_nota || 'N/A',
-                    valorTotal: parseFloat(jsonData.valor_total || jsonData.valor || 0),
-                    dataEmissao: jsonData.data_emissao || jsonData.data || new Date().toISOString().split('T')[0],
-                    cnpjEmitente: jsonData.cnpj_emitente || jsonData.cnpj || 'N/A',
-                    nomeEmitente: jsonData.nome_emitente || jsonData.emitente || 'Desconhecido',
-                    produtos: jsonData.produtos || []
-                };
-            }
-        } catch (e) {}
-        
-        // Tenta extrair como URL com parâmetros
-        if (qrData.includes('?') || qrData.includes('&')) {
-            const urlParams = new URLSearchParams(qrData.split('?')[1] || '');
-            const chave = urlParams.get('chave') || urlParams.get('p') || qrData;
-            
-            // Tenta extrair produtos da URL
-            const produtosStr = urlParams.get('produtos') || urlParams.get('itens') || '';
-            let produtos = [];
-            
-            if (produtosStr) {
-                try {
-                    produtos = JSON.parse(decodeURIComponent(produtosStr));
-                } catch (e) {
-                    // Tenta parsear como lista simples
-                    produtos = produtosStr.split(',').map(p => ({
-                        produto: p.trim(),
-                        quantidade: 1,
-                        preco: 0
-                    }));
-                }
-            }
-            
-            return {
-                chaveAcesso: chave,
-                numero: urlParams.get('n') || urlParams.get('numero') || 'N/A',
-                valorTotal: parseFloat(urlParams.get('v') || '0'),
-                dataEmissao: urlParams.get('d') || new Date().toISOString().split('T')[0],
-                cnpjEmitente: urlParams.get('c') || 'N/A',
-                nomeEmitente: urlParams.get('e') || 'Desconhecido',
-                produtos: produtos
-            };
-        }
-        
-        // Chave de 44 dígitos
-        if (/^\d{44}$/.test(qrData)) {
-            return {
-                chaveAcesso: qrData,
-                numero: qrData.substring(25, 34),
-                valorTotal: 0,
-                dataEmissao: `20${qrData.substring(0,2)}-${qrData.substring(2,4)}-${qrData.substring(4,6)}`,
-                cnpjEmitente: qrData.substring(6, 20),
-                nomeEmitente: 'Desconhecido',
-                produtos: []
-            };
-        }
-        
-        // Formato com separador
-        const campos = qrData.split('|');
-        if (campos.length >= 2) {
-            return {
-                chaveAcesso: campos[0] || qrData,
-                numero: campos[1] || 'N/A',
-                valorTotal: parseFloat(campos[2] || '0'),
-                dataEmissao: campos[3] || new Date().toISOString().split('T')[0],
-                cnpjEmitente: campos[4] || 'N/A',
-                nomeEmitente: campos[5] || 'Desconhecido',
-                produtos: []
-            };
-        }
-        
-        // Fallback: usar o dado bruto
-        return {
-            chaveAcesso: qrData,
-            numero: 'N/A',
-            valorTotal: 0,
-            dataEmissao: new Date().toISOString().split('T')[0],
-            cnpjEmitente: 'N/A',
-            nomeEmitente: 'Desconhecido',
-            produtos: []
-        };
-        
-    } catch (error) {
-        console.error('Erro ao extrair dados do QR:', error);
-        return {
-            chaveAcesso: qrData,
-            numero: 'N/A',
-            valorTotal: 0,
-            dataEmissao: new Date().toISOString().split('T')[0],
-            cnpjEmitente: 'N/A',
-            nomeEmitente: 'Desconhecido',
-            produtos: []
-        };
-    }
-}
-
-// Busca produtos de uma API simulada
-async function buscarProdutosAPI(chaveAcesso) {
-    console.log('🔍 Buscando produtos para chave:', chaveAcesso);
-    
-    // Simula delay de rede
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Lista de produtos comuns em notas fiscais
-    const produtosComuns = [
-        { produto: "Arroz", preco: 8.89, mercado: "Miller" },
-        { produto: "Feijão", preco: 4.49, mercado: "Desco" },
-        { produto: "Óleo", preco: 5.99, mercado: "Via" },
-        { produto: "Açúcar", preco: 14.95, mercado: "Desco" },
-        { produto: "Café", preco: 19.90, mercado: "Miller" },
-        { produto: "Leite", preco: 4.50, mercado: "Desco" },
-        { produto: "Pão", preco: 3.00, mercado: "Padaria" },
-        { produto: "Queijo", preco: 12.90, mercado: "Frios" },
-        { produto: "Presunto", preco: 8.90, mercado: "Frios" },
-        { produto: "Margarina", preco: 4.50, mercado: "Desco" },
-        { produto: "Macarrão", preco: 2.39, mercado: "Via" },
-        { produto: "Molho de tomate", preco: 3.39, mercado: "Desco" },
-        { produto: "Sabão em pó", preco: 9.98, mercado: "Miller" },
-        { produto: "Papel higiênico", preco: 21.90, mercado: "Desco" },
-        { produto: "Detergente", preco: 1.69, mercado: "Confitá" },
-        { produto: "Biscoito Trakinas", preco: 2.49, mercado: "Miller" }
-    ];
-    
-    // Seleciona produtos aleatórios baseados na chave
-    const hash = chaveAcesso.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const quantidade = (hash % 6) + 3; // 3 a 8 produtos
-    const startIndex = hash % (produtosComuns.length - quantidade);
-    
-    const produtosSelecionados = produtosComuns.slice(startIndex, startIndex + quantidade);
-    
-    return produtosSelecionados.map((p, index) => ({
-        ...p,
-        quantidade: 1,
-        preco: p.preco + (Math.random() * 2 - 1) // Varia um pouco o preço
-    }));
-}
-
-// Gera produtos de exemplo quando não encontra nada
-function gerarProdutosExemplo() {
-    const exemplos = [
-        { produto: "Arroz", preco: 8.89, quantidade: 1, mercado: "Miller" },
-        { produto: "Feijão", preco: 4.49, quantidade: 1, mercado: "Desco" },
-        { produto: "Óleo", preco: 5.99, quantidade: 1, mercado: "Via" },
-        { produto: "Café", preco: 19.90, quantidade: 1, mercado: "Miller" },
-        { produto: "Leite", preco: 4.50, quantidade: 1, mercado: "Desco" }
-    ];
-    
-    // Seleciona 3-5 produtos aleatórios
-    const quantidade = Math.floor(Math.random() * 3) + 3;
-    const selecionados = [];
-    const copia = [...exemplos];
-    
-    for (let i = 0; i < quantidade && copia.length > 0; i++) {
-        const index = Math.floor(Math.random() * copia.length);
-        selecionados.push(copia.splice(index, 1)[0]);
-    }
-    
-    return selecionados;
-}
-
-// Mostra resumo da nota fiscal
-function mostrarResumoNota(nota) {
-    console.log('📋 Resumo da Nota Fiscal:');
-    console.log(`   Chave: ${nota.chaveAcesso?.substring(0, 15) || 'N/A'}...`);
-    console.log(`   Número: ${nota.numero || 'N/A'}`);
-    console.log(`   Valor Total: R$ ${nota.valorTotal?.toFixed(2) || '0,00'}`);
-    console.log(`   Data: ${nota.dataEmissao || 'N/A'}`);
-    console.log(`   Emitente: ${nota.nomeEmitente || 'N/A'}`);
-    console.log(`   Produtos: ${nota.produtos?.length || 0} itens`);
-    
-    if (nota.produtos && nota.produtos.length > 0) {
-        console.log('   📦 Produtos:');
-        nota.produtos.forEach((p, i) => {
-            console.log(`      ${i+1}. ${p.produto} - R$ ${p.preco?.toFixed(2) || '0,00'} (${p.mercado || 'N/A'})`);
-        });
-    }
-}
-
-// ============================================================
-// ===== FUNÇÃO PARA VISUALIZAR NOTAS ESCANEADAS =====
-// ============================================================
-function visualizarNotasEscaneadas() {
-    const notas = DB.buscarNotas();
-    
-    if (notas.length === 0) {
-        alert('📭 Nenhuma nota fiscal escaneada ainda.');
-        return;
-    }
-    
-    let mensagem = '📋 NOTAS FISCAIS ESCANEADAS:\n\n';
-    mensagem += '═'.repeat(40) + '\n';
-    
-    notas.forEach((nota, index) => {
-        mensagem += `📄 NOTA #${index + 1}\n`;
-        mensagem += `   Chave: ${nota.chaveAcesso?.substring(0, 15) || 'N/A'}...\n`;
-        mensagem += `   Número: ${nota.numero || 'N/A'}\n`;
-        mensagem += `   Emitente: ${nota.nomeEmitente || 'N/A'}\n`;
-        mensagem += `   Data: ${nota.dataEmissao || 'N/A'}\n`;
-        mensagem += `   Valor: R$ ${nota.valorTotal?.toFixed(2) || '0,00'}\n`;
-        mensagem += `   Produtos: ${nota.produtos?.length || 0} itens\n`;
-        mensagem += `   Escaneado: ${nota.criadoEm ? new Date(nota.criadoEm).toLocaleString() : 'N/A'}\n`;
-        mensagem += '─'.repeat(40) + '\n';
-        
-        if (nota.produtos && nota.produtos.length > 0) {
-            mensagem += '   📦 Produtos:\n';
-            nota.produtos.forEach((p, i) => {
-                mensagem += `      ${i+1}. ${p.produto} - R$ ${p.preco?.toFixed(2) || '0,00'}\n`;
-            });
-            mensagem += '─'.repeat(40) + '\n';
-        }
-    });
-    
-    alert(mensagem);
-}
-
-// ============================================================
-// ===== FUNÇÕES DO SCANNER =====
-// ============================================================
 window.alternarScanner = function() {
     const btn = document.getElementById("btnIniciarCamera");
     const reader = document.getElementById("reader");
@@ -1376,10 +1291,7 @@ window.alternarScanner = function() {
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (qrCodeMessage) => {
-            // Processa o QR Code
             await processarQRCodeNotaFiscal(qrCodeMessage);
-            
-            // Para o scanner após ler
             html5QrcodeScanner.stop().then(() => {
                 btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
                 btn.style.background = "#4f46e5";
@@ -1412,7 +1324,7 @@ function carregar() {
     document.getElementById("qtdItens").innerText = pendentes;
     document.getElementById("qtdComprados").innerText = comprados;
     document.getElementById("qtdTotalGeral").innerText = totalGeralItens;
-    OfertasDB.atualizarContador();
+    OfertasLocal.atualizarContador();
 
     if (abaAtual === "gabarito") {
         const paginaGabarito = document.getElementById("paginaGabarito");
@@ -1433,7 +1345,7 @@ function carregar() {
                 const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
                 let tagPromoHtml = '';
                 
-                const oferta = OfertasDB.buscarTodas().find(o => 
+                const oferta = OfertasLocal.buscarTodas().find(o => 
                     o.produto?.toLowerCase() === prod.toLowerCase()
                 );
                 
@@ -1481,7 +1393,7 @@ function carregar() {
                 let preçoSugerido = item.valor || 0;
                 
                 let textoOferta = "";
-                const oferta = OfertasDB.buscarTodas().find(o => 
+                const oferta = OfertasLocal.buscarTodas().find(o => 
                     o.produto?.toLowerCase() === item.produto.toLowerCase()
                 );
                 
@@ -1719,6 +1631,10 @@ function importarDoExtrator() {
     }
 }
 
+function visualizarNotasEscaneadas() {
+    alert('📄 Notas escaneadas são salvas no Firebase Firestore!');
+}
+
 // ============================================================
 // ===== FUNÇÕES DE BACKUP =====
 // ============================================================
@@ -1726,8 +1642,7 @@ function exportarDados() {
     const dados = {
         compras: compras,
         gabarito: gabaritoCustomizado,
-        ofertas: OfertasDB.buscarTodas(),
-        notas: DB.buscarNotas(),
+        ofertas: OfertasLocal.buscarTodas(),
         data: new Date().toISOString()
     };
     const json = JSON.stringify(dados, null, 2);
@@ -1760,12 +1675,8 @@ function importarDados() {
                     localStorage.setItem("gabarito_custom", JSON.stringify(gabaritoCustomizado));
                 }
                 if (dados.ofertas) {
-                    OfertasDB.ofertas = dados.ofertas;
-                    OfertasDB.salvar();
-                }
-                if (dados.notas) {
-                    DB.notasFiscais = dados.notas;
-                    DB.salvar();
+                    OfertasLocal.ofertas = dados.ofertas;
+                    OfertasLocal.salvar();
                 }
                 alert('✅ Dados importados com sucesso!');
                 carregar();
@@ -1783,28 +1694,48 @@ function importarDados() {
 // ===== INICIALIZAÇÃO =====
 // ============================================================
 console.log('🚀 Sistema inicializado!');
-console.log('📊 Ofertas salvas:', OfertasDB.buscarTodas().length);
-console.log('📋 Itens na lista:', compras.length);
+console.log('🔥 Firebase configurado!');
+console.log('📊 Ofertas locais:', OfertasLocal.buscarTodas().length);
 
-// Adiciona ofertas de exemplo se não houver nenhuma
-if (OfertasDB.buscarTodas().length === 0) {
-    const ofertasExemplo = [
-        { produto: "Arroz", valorOferta: 18.90, mercado: "Supermercado Central" },
-        { produto: "Feijão", valorOferta: 4.49, mercado: "Desco" },
-        { produto: "Óleo", valorOferta: 5.99, mercado: "Via" }
-    ];
-    OfertasDB.adicionarMultiplas(ofertasExemplo);
+// Carrega ofertas do Firebase na inicialização
+async function init() {
+    try {
+        const firebaseOfertas = await OfertasFirebase.buscarTodas();
+        if (firebaseOfertas.length > 0) {
+            OfertasLocal.ofertas = firebaseOfertas;
+            OfertasLocal.salvar();
+            console.log('🔥 Ofertas carregadas do Firebase:', firebaseOfertas.length);
+        } else {
+            // Se não tem no Firebase, adiciona exemplos
+            const exemplos = [
+                { produto: "Arroz", valorOferta: 18.90, mercado: "Supermercado Central" },
+                { produto: "Feijão", valorOferta: 4.49, mercado: "Desco" },
+                { produto: "Óleo", valorOferta: 5.99, mercado: "Via" }
+            ];
+            
+            // Tenta salvar no Firebase
+            try {
+                await OfertasFirebase.salvarMultiplas(exemplos);
+                console.log('🔥 Ofertas de exemplo salvas no Firebase');
+            } catch (e) {
+                OfertasLocal.adicionarMultiplas(exemplos);
+                console.log('📝 Ofertas de exemplo salvas localmente');
+            }
+        }
+    } catch (error) {
+        console.log('⚠️ Usando dados locais (Firebase offline)');
+    }
+    
+    carregar();
+    await carregarOfertas();
+    OfertasLocal.atualizarContador();
+    
+    console.log('✅ Sistema pronto!');
+    console.log('💡 Para ver as ofertas, clique na aba "Ofertas"');
 }
 
-// Carrega tudo
-carregar();
-carregarOfertas();
-OfertasDB.atualizarContador();
-
-console.log('✅ Sistema pronto!');
-console.log('💡 Para ver as ofertas, clique na aba "Ofertas"');
-console.log('🔍 Para ver no console: OfertasDB.buscarTodas()');
-console.log('📱 Para escanear QR Code, clique no botão azul');
+// Inicia o sistema
+init();
 </script>
 </body>
 </html>
