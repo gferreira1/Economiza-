@@ -12,43 +12,931 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 
 <style>
-/* ... (seu CSS existente) ... */
+:root{
+    --azul:#2563eb;
+    --verde:#16a34a;
+    --vermelho:#dc2626;
+    --cinza:#64748b;
+    --fundo:#f8fafc;
+    --card:#ffffff;
+    --borda:#e2e8f0;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+    background:var(--fundo);
+    color:#0f172a;
+}
+
+header{
+    background:var(--azul);
+    color:white;
+    padding:15px 20px;
+    text-align:center;
+}
+
+header h1{
+    font-size: 20px;
+}
+
+.dashboard{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.cardResumo{
+    background:var(--card);
+    padding: 10px 5px;
+    border-radius:12px;
+    box-shadow:0 3px 10px rgba(0,0,0,.04);
+    text-align: center;
+}
+
+.cardResumo span{
+    color:var(--cinza);
+    font-size: 11px;
+    display: block;
+    font-weight: 500;
+}
+
+.cardResumo h2{
+    margin-top:2px;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#qtdItens { color: var(--vermelho); }
+#qtdComprados { color: var(--azul); }
+#qtdTotalGeral { color: var(--verde); }
+#qtdOfertas { color: #8b5cf6; }
+
+.menu{
+    display:flex;
+    justify-content: space-between;
+    gap:8px;
+    margin: 5px auto 15px auto;
+    padding: 0 12px;
+    max-width: 1200px;
+}
+
+.menu button{
+    flex: 1;
+    padding: 10px 5px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#e2e8f0;
+    color:#334155;
+    font-weight: 600;
+    font-size: 12px;
+    text-align: center;
+}
+
+.menu button.ativo {
+    background: var(--azul);
+    color: white;
+}
+
+.menu button.btn-importar {
+    background: #8b5cf6;
+    color: white;
+}
+.menu button.btn-importar:hover {
+    background: #7c3aed;
+}
+
+@media (max-width: 600px) {
+    body { padding-bottom: 80px; }
+    .menu {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: #ffffff;
+        margin: 0; padding: 8px 10px;
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
+        z-index: 9999;
+        border-top: 1px solid var(--borda);
+    }
+    .menu button {
+        background: transparent; color: var(--cinza);
+        font-size: 10px; padding: 4px 0;
+    }
+    .menu button span { font-size: 18px; display: block; }
+    .menu button.ativo { background: transparent; color: var(--azul); }
+    .menu button.btn-importar { background: transparent; color: #8b5cf6; }
+}
+
+.container-scanner {
+    max-width: 1200px;
+    margin: 10px auto;
+    padding: 0 12px;
+}
+.btnScanner {
+    width: 100%;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+#reader {
+    width: 100%;
+    max-width: 400px;
+    margin: 10px auto;
+    border-radius: 12px;
+    overflow: hidden;
+    border: none !important;
+    display: none;
+}
+
+.secao-sugestoes {
+    padding: 0 12px;
+    margin-bottom: 15px;
+    max-width: 1200px;
+    margin: 0 auto 15px auto;
+}
+.secao-sugestoes p {
+    font-size: 11px;
+    color: var(--cinza);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.badges-favoritos {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+.badge-item {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 1200px;
+    margin: 10px auto 15px auto;
+    padding: 0 12px;
+}
+
+.linha-busca {
+    display: flex;
+    gap: 10px;
+}
+
+.linha-busca input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.btnNovoProduto {
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--azul);
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.btnVirarMes {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #fee2e2;
+    color: #991b1b;
+    cursor: pointer;
+    font-weight: 600;
+    width: 100%;
+}
+
+.titulo-categoria {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    color: var(--cinza);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 15px 0 5px 0;
+    padding-left: 5px;
+    border-left: 3px solid var(--azul);
+}
+
+.container{
+    width:95%;
+    max-width:1200px;
+    margin:auto;
+    padding-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+    .container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 12px;
+    }
+}
+
+.item-card{
+    background:white;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-card.comprado { opacity: 0.4; }
+.item-card.comprado h3 { text-decoration: line-through; color: var(--cinza); }
+.item-card h3 { font-size: 15px; cursor: pointer; }
+
+.tag-melhor-preco {
+    font-size: 11px;
+    color: var(--verde);
+    background: #e6f4ea;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-block;
+    font-weight: 600;
+}
+
+.tag-promocao-miller {
+    font-size: 11px;
+    color: white;
+    background: #1e40af;
+    border: 1px solid #1d4ed8;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.tag-promocao-desco {
+    font-size: 11px;
+    color: #fef08a;
+    background: #dc2626;
+    border: 1px solid #facc15;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.tag-promocao-via {
+    font-size: 11px;
+    color: #ffffff;
+    background: #f97316;
+    border: 1px solid #ea580c;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btnAdicionar {
+    border: none; padding: 8px 12px; border-radius: 8px;
+    background: #dcfce7; color: #15803d; font-weight: 600; cursor: pointer;
+}
+.btnAdicionar.ja-adicionado { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+.detalhes-produto { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--borda); }
+.detalhes-produto.ativo { display: block; }
+.linha-inputs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.campo { display: flex; flex-direction: column; gap: 4px; }
+.campo label { font-size: 10px; color: var(--cinza); font-weight: 600; }
+.linha-inputs input, .linha-inputs select { padding: 6px; border: 1px solid var(--borda); border-radius: 6px; font-size: 12px; }
+
+.btnBuscarNfg {
+    background: #f8fafc;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+.btnBuscarNfg:hover { background: #f1f5f9; border-color: #94a3b8; }
+
+.btnToggleDetalhes { background: none; border: none; color: var(--azul); font-size: 11px; cursor: pointer; }
+.valor-total{ font-size:14px; font-weight:bold; color: var(--verde); }
+.topo-card { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.btnRemover { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px; }
+.flex-col { display: flex; flex-direction: column; width: 100%; align-items: flex-start; }
+.oculto{ display:none !important; }
+
+#paginaHistorico .card{ background:white; padding:15px; border-radius:12px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+#produtoHistorico { width: 100%; padding: 10px; border: 1px solid var(--borda); border-radius: 8px; margin-bottom: 12px; font-size: 15px; }
+
+.estatisticas{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+#paginaHistorico .card-estatistica { padding: 8px 4px; text-align: center; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+#paginaHistorico .card-estatistica span { font-size: 10px; color: var(--cinza); }
+#paginaHistorico .card-estatistica h2 { font-size: 13px; margin-top: 2px; }
+
+.secao-backup { max-width: 1200px; margin: 15px auto; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.secao-backup button { background: transparent; border: 1px solid var(--borda); padding: 6px 10px; border-radius: 8px; font-size: 10px; color: var(--cinza); cursor: pointer; }
+
+/* Estilos para a página de ofertas */
+.card-oferta {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    border-left: 4px solid #8b5cf6;
+}
+
+.card-oferta .produto-nome {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.card-oferta .preco-oferta {
+    color: #16a34a;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.card-oferta .mercado-nome {
+    color: var(--cinza);
+    font-size: 13px;
+}
+
+.card-oferta .btn-remover-oferta {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* Feedback flutuante */
+.feedback-flutuante {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    z-index: 10000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    max-width: 90%;
+    text-align: center;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes fadeOutDown {
+    from { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+}
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(100px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideOutRight {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100px); }
+}
 </style>
 </head>
 
 <body>
 
-<!-- ... (seu HTML existente) ... -->
+<header>
+    <h1>🛒 Lista de Compras Inteligente</h1>
+</header>
+
+<div class="dashboard">
+    <div class="cardResumo">
+        <span>Faltam</span>
+        <h2 id="qtdItens">0</h2>
+    </div>
+    <div class="cardResumo">
+        <span>Comprados</span>
+        <h2 id="qtdComprados">0</h2>
+    </div>
+    <div class="cardResumo">
+        <span>Total Itens</span>
+        <h2 id="qtdTotalGeral">0</h2>
+    </div>
+    <div class="cardResumo">
+        <span>Ofertas</span>
+        <h2 id="qtdOfertas">0</h2>
+    </div>
+</div>
+
+<div class="menu">
+    <button id="btnAbaGabarito" class="ativo" onclick="mudarAba('gabarito')"><span>📋</span> Adicionar</button>
+    <button id="btnAbaCarrinho" onclick="mudarAba('carrinho')"><span>🛒</span> Lista Atual</button>
+    <button id="btnAbaHistorico" onclick="mudarAba('historico')"><span>📊</span> Preços</button>
+    <button id="btnAbaOfertas" onclick="mudarAba('ofertas')"><span>🏷️</span> Ofertas</button>
+    <button class="btn-importar" onclick="importarDoExtrator()"><span>📥</span> Importar</button>
+</div>
+
+<div id="secaoScanner" class="container-scanner oculto">
+    <button class="btnScanner" id="btnIniciarCamera" onclick="alternarScanner()">
+        📷 Escanear QR Code da Nota Gaúcha
+    </button>
+    <div id="reader"></div>
+</div>
+
+<div id="secaoSugestoes" class="secao-sugestoes">
+    <p>⭐ Patrocinados & Mais Comprados:</p>
+    <div id="listaFavoritos" class="badges-favoritos"></div>
+</div>
+
+<div class="filtros">
+    <div class="linha-busca">
+        <input id="busca" type="text" placeholder="🔍 Buscar ou digitar novo..." onkeyup="carregar()">
+        <button class="btnNovoProduto" onclick="cadastrarNovoProdutoGeral()"> Criar</button>
+    </div>
+    <button id="btnVirarMes" class="btnVirarMes oculto" onclick="novoMes()"> Fechar Mês / Limpar Lista</button>
+</div>
+
+<div id="paginaGabarito" class="container"></div>
+<div id="paginaCarrinho" class="container oculto"></div>
+
+<div id="paginaHistorico" class="oculto container">
+    <div class="card" style="grid-column: 1 / -1;">
+        <label style="font-weight:600; display:block; margin-bottom:5px;">Histórico de Preços:</label>
+        <select id="produtoHistorico"></select>
+        <canvas id="grafico"></canvas>
+    </div>
+
+    <div class="estatisticas" style="grid-column: 1 / -1;">
+        <div class="card-estatistica">
+            <span>Menor Preço</span>
+            <h2 id="menorPreco">R$ 0,00</h2>
+        </div>
+        <div class="card-estatistica">
+            <span>Maior Preço</span>
+            <h2 id="maiorPreco">R$ 0,00</h2>
+        </div>
+        <div class="card-estatistica">
+            <span>Último Preço</span>
+            <h2 id="ultimoPreco">R$ 0,00</h2>
+        </div>
+    </div>
+</div>
+
+<!-- Página de Ofertas -->
+<div id="paginaOfertas" class="oculto container">
+    <div style="grid-column: 1 / -1; display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <button onclick="adicionarOfertaManual()" style="padding: 10px 20px; background: #8b5cf6; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+            ➕ Adicionar Oferta
+        </button>
+        <button onclick="limparTodasOfertas()" style="padding: 10px 20px; background: #fee2e2; color: #dc2626; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+            🗑️ Limpar Todas
+        </button>
+        <button onclick="exportarOfertas()" style="padding: 10px 20px; background: #e2e8f0; color: #334155; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+            📤 Exportar
+        </button>
+        <button onclick="importarOfertas()" style="padding: 10px 20px; background: #e2e8f0; color: #334155; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">
+            📥 Importar
+        </button>
+    </div>
+    <div id="listaOfertas" style="grid-column: 1 / -1;"></div>
+</div>
+
+<div class="secao-backup">
+    <button onclick="exportarDados()">💾 Exportar Backup</button>
+    <button onclick="importarDados()">📂 Importar Backup</button>
+    <button onclick="visualizarNotasEscaneadas()">📄 Ver Notas</button>
+</div>
 
 <script>
 // ============================================================
-// ===== BANCO DE DADOS LOCAL (SIMULAÇÃO) =====
+// ===== MAPA DE CATEGORIAS =====
+// ============================================================
+const mapaCategorias = {
+    "Água com gás": "Bebidas", "Água mineral": "Bebidas", "Refrigerante": "Bebidas", 
+    "Suco": "Bebidas", "Energético": "Bebidas", "Cerveja Heineken": "Bebidas", 
+    "Café": "Matinais", "Leite": "Matinais", "Erva-mate": "Matinais", 
+    "Achocolatado": "Matinais", "Creme de avelã": "Matinais", "Chimia/Geleia": "Matinais",
+    "Arroz": "Mercearia", "Feijão": "Mercearia", "Macarrão": "Mercearia", 
+    "Açúcar": "Mercearia", "Óleo": "Mercearia", "Sal": "Mercearia", 
+    "Farinha de trigo": "Mercearia", "Farofa": "Mercearia", "Vinagre": "Mercearia",
+    "Molho de tomate": "Mercearia", "Milho verde": "Enlatados", "Ervilha": "Enlatados", 
+    "Maionese": "Molhos", "Ketchup": "Molhos", "Mostarda": "Molhos",
+    "Carne bovina": "Açougue", "Carne Moída": "Açougue", "Frango": "Açougue", 
+    "Linguiça": "Açougue", "Bacon": "Açougue", "Queijo": "Frios e Laticínios", 
+    "Presunto": "Frios e Laticínios", "Ovos": "Frios e Laticínios", "Margarina": "Frios e Laticínios",
+    "Batata": "Hortifrúti", "Batata palha": "Mercearia", "Cebola": "Hortifrúti", 
+    "Tomate": "Hortifrúti", "Cenoura": "Hortifrúti", "Alface": "Hortifrúti", "Alho": "Hortifrúti",
+    "Banana": "Hortifrúti", "Maçã": "Hortifrúti", "Laranja": "Hortifrúti", 
+    "Pão": "Padaria", "Biscoito Trakinas": "Padaria", "Biscoito Oreo": "Padaria", 
+    "Biscoito Club Social": "Padaria", "Papel higiênico": "Higiene", "Papel toalha": "Limpeza", 
+    "Detergente": "Limpeza", "Sabão em pó": "Limpeza", "Água sanitária": "Limpeza", 
+    "Desinfetante": "Limpeza", "Esponja de louça": "Limpeza", "Shampoo": "Higiene", 
+    "Condicionador": "Higiene", "Sabonete": "Higiene", "Creme dental": "Higiene"
+};
+
+function obterCategoria(produto) {
+    return mapaCategorias[produto] || "Outros";
+}
+
+// ============================================================
+// ===== BANCO DE DADOS DE OFERTAS =====
 // ============================================================
 
-// Estrutura do "banco de dados" local
-const DB = {
-    // Tabela de notas fiscais escaneadas
-    notasFiscais: JSON.parse(localStorage.getItem('notas_fiscais_db')) || [],
+const OfertasDB = {
+    ofertas: JSON.parse(localStorage.getItem('ofertas_dia')) || [],
     
-    // Tabela de produtos da nota atual
+    salvar() {
+        localStorage.setItem('ofertas_dia', JSON.stringify(this.ofertas));
+        console.log('💾 Ofertas salvas:', this.ofertas.length);
+        this.atualizarContador();
+    },
+    
+    adicionar(oferta) {
+        // Verifica se já existe (pelo ID ou produto+mercado)
+        const existe = this.ofertas.find(o => 
+            o.id === oferta.id || 
+            (o.produto && o.produto.toLowerCase() === oferta.produto?.toLowerCase() && 
+             o.mercado?.toLowerCase() === oferta.mercado?.toLowerCase())
+        );
+        
+        if (existe) {
+            Object.assign(existe, oferta);
+            existe.atualizadoEm = new Date().toISOString();
+        } else {
+            oferta.id = oferta.id || `oferta_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            oferta.criadoEm = new Date().toISOString();
+            oferta.atualizadoEm = new Date().toISOString();
+            this.ofertas.unshift(oferta);
+        }
+        this.salvar();
+        return oferta;
+    },
+    
+    adicionarMultiplas(ofertas) {
+        let adicionadas = 0;
+        for (const oferta of ofertas) {
+            this.adicionar(oferta);
+            adicionadas++;
+        }
+        return adicionadas;
+    },
+    
+    buscarTodas() {
+        return this.ofertas;
+    },
+    
+    buscarPorMercado(mercado) {
+        return this.ofertas.filter(o => o.mercado?.toLowerCase() === mercado?.toLowerCase());
+    },
+    
+    buscarPorProduto(produto) {
+        return this.ofertas.filter(o => 
+            o.produto?.toLowerCase().includes(produto.toLowerCase())
+        );
+    },
+    
+    buscarPorId(id) {
+        return this.ofertas.find(o => o.id === id);
+    },
+    
+    remover(id) {
+        this.ofertas = this.ofertas.filter(o => o.id !== id);
+        this.salvar();
+    },
+    
+    limparTodas() {
+        if (confirm('⚠️ Tem certeza que deseja limpar todas as ofertas?')) {
+            this.ofertas = [];
+            this.salvar();
+            return true;
+        }
+        return false;
+    },
+    
+    atualizarContador() {
+        const elemento = document.getElementById('qtdOfertas');
+        if (elemento) {
+            elemento.textContent = this.ofertas.length;
+        }
+    }
+};
+
+// ============================================================
+// ===== FUNÇÕES DE GERENCIAMENTO DE OFERTAS =====
+// ============================================================
+
+function adicionarOfertaManual() {
+    const produto = prompt('📝 Digite o nome do produto:');
+    if (!produto) return;
+    
+    const valorOferta = prompt('💰 Digite o valor da oferta (ex: 18.90):');
+    if (!valorOferta) return;
+    
+    const mercado = prompt('🏪 Digite o nome do mercado (ex: Supermercado Central):') || 'Desconhecido';
+    
+    const oferta = {
+        id: `oferta_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        produto: produto.trim(),
+        valorOferta: parseFloat(valorOferta.replace(',', '.')),
+        mercado: mercado.trim(),
+        data: new Date().toISOString().split('T')[0],
+        criadoEm: new Date().toISOString(),
+        atualizadoEm: new Date().toISOString()
+    };
+    
+    OfertasDB.adicionar(oferta);
+    mostrarFeedback(`✅ Oferta de "${produto}" adicionada com sucesso!`, 'sucesso');
+    carregarOfertas();
+}
+
+function removerOferta(id) {
+    if (confirm('⚠️ Tem certeza que deseja remover esta oferta?')) {
+        OfertasDB.remover(id);
+        mostrarFeedback('🗑️ Oferta removida com sucesso!', 'info');
+        carregarOfertas();
+    }
+}
+
+function limparTodasOfertas() {
+    if (OfertasDB.limparTodas()) {
+        mostrarFeedback('🗑️ Todas as ofertas foram removidas!', 'info');
+        carregarOfertas();
+    }
+}
+
+function carregarOfertas() {
+    const container = document.getElementById('listaOfertas');
+    if (!container) return;
+    
+    const ofertas = OfertasDB.buscarTodas();
+    
+    if (ofertas.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--cinza); grid-column: 1 / -1;">
+                <p style="font-size: 18px;">🏷️ Nenhuma oferta cadastrada</p>
+                <p style="font-size: 14px; margin-top: 8px;">Clique em "Adicionar Oferta" para começar</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    for (const oferta of ofertas) {
+        const valorFormatado = oferta.valorOferta?.toFixed(2) || '0,00';
+        const dataFormatada = oferta.data ? new Date(oferta.data).toLocaleDateString('pt-BR') : 'N/A';
+        
+        html += `
+            <div class="card-oferta" style="grid-column: 1 / -1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <div class="produto-nome">${oferta.produto || 'Produto não definido'}</div>
+                        <div class="mercado-nome">🏪 ${oferta.mercado || 'Mercado não definido'}</div>
+                        <div style="font-size: 11px; color: var(--cinza); margin-top: 4px;">
+                            📅 ${dataFormatada} • ID: ${oferta.id?.substring(0, 8) || 'N/A'}
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <div class="preco-oferta">R$ ${valorFormatado}</div>
+                        <button class="btn-remover-oferta" onclick="removerOferta('${oferta.id}')">
+                            ✕ Remover
+                        </button>
+                        <button onclick="adicionarOfertaALista('${oferta.id}')" 
+                                style="background: #dcfce7; color: #15803d; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                            ➕ Adicionar à Lista
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+    OfertasDB.atualizarContador();
+}
+
+function adicionarOfertaALista(id) {
+    const oferta = OfertasDB.buscarPorId(id);
+    if (!oferta) {
+        mostrarFeedback('❌ Oferta não encontrada!', 'erro');
+        return;
+    }
+    
+    // Verifica se já está na lista
+    const existe = compras.some(x => 
+        x.produto.toLowerCase() === oferta.produto.toLowerCase() && 
+        x.noCarrinho && 
+        !x.arquivado
+    );
+    
+    if (existe) {
+        mostrarFeedback(`⚠️ "${oferta.produto}" já está na lista de compras!`, 'alerta');
+        return;
+    }
+    
+    compras.push({
+        id: Date.now() + Math.random(),
+        produto: oferta.produto,
+        quantidade: 1,
+        valor: oferta.valorOferta || 0,
+        mercado: oferta.mercado || 'Desconhecido',
+        data: new Date().toISOString().split('T')[0],
+        comprado: false,
+        noCarrinho: true,
+        arquivado: false,
+        origem: 'oferta'
+    });
+    
+    salvar();
+    mostrarFeedback(`✅ "${oferta.produto}" adicionado à lista de compras!`, 'sucesso');
+    carregarOfertas();
+}
+
+function exportarOfertas() {
+    const ofertas = OfertasDB.buscarTodas();
+    if (ofertas.length === 0) {
+        alert('📭 Nenhuma oferta para exportar.');
+        return;
+    }
+    
+    const json = JSON.stringify(ofertas, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ofertas_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    mostrarFeedback(`📤 ${ofertas.length} ofertas exportadas com sucesso!`, 'sucesso');
+}
+
+function importarOfertas() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const ofertas = JSON.parse(event.target.result);
+                if (!Array.isArray(ofertas)) {
+                    throw new Error('Formato inválido');
+                }
+                
+                const adicionadas = OfertasDB.adicionarMultiplas(ofertas);
+                mostrarFeedback(`📥 ${adicionadas} ofertas importadas com sucesso!`, 'sucesso');
+                carregarOfertas();
+            } catch (error) {
+                mostrarFeedback('❌ Erro ao importar ofertas: ' + error.message, 'erro');
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+// ============================================================
+// ===== FUNÇÃO PARA VISUALIZAR NOTAS ESCANEADAS =====
+// ============================================================
+
+function visualizarNotasEscaneadas() {
+    const notas = DB.buscarNotas();
+    
+    if (notas.length === 0) {
+        alert('📭 Nenhuma nota fiscal escaneada ainda.');
+        return;
+    }
+    
+    let mensagem = '📋 NOTAS FISCAIS ESCANEADAS:\n\n';
+    mensagem += '═'.repeat(40) + '\n';
+    
+    notas.forEach((nota, index) => {
+        mensagem += `📄 NOTA #${index + 1}\n`;
+        mensagem += `   Chave: ${nota.chaveAcesso?.substring(0, 15) || 'N/A'}...\n`;
+        mensagem += `   Número: ${nota.numero || 'N/A'}\n`;
+        mensagem += `   Emitente: ${nota.nomeEmitente || 'N/A'}\n`;
+        mensagem += `   Data: ${nota.dataEmissao || 'N/A'}\n`;
+        mensagem += `   Valor: R$ ${nota.valorTotal?.toFixed(2) || '0,00'}\n`;
+        mensagem += `   Escaneado: ${nota.criadoEm ? new Date(nota.criadoEm).toLocaleString() : 'N/A'}\n`;
+        mensagem += '─'.repeat(40) + '\n';
+    });
+    
+    alert(mensagem);
+}
+
+// ============================================================
+// ===== FUNÇÕES DE FEEDBACK =====
+// ============================================================
+
+function mostrarFeedback(mensagem, tipo = 'info') {
+    const cores = {
+        info: '#3b82f6',
+        sucesso: '#22c55e',
+        erro: '#ef4444',
+        alerta: '#f59e0b'
+    };
+    
+    const antigos = document.querySelectorAll('.feedback-flutuante');
+    antigos.forEach(el => el.remove());
+    
+    const div = document.createElement('div');
+    div.className = 'feedback-flutuante';
+    div.style.cssText = `
+        background: ${cores[tipo] || cores.info};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 10000;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        max-width: 90%;
+        text-align: center;
+    `;
+    div.textContent = mensagem;
+    document.body.appendChild(div);
+    
+    setTimeout(() => {
+        div.style.animation = 'fadeOutDown 0.3s ease';
+        setTimeout(() => div.remove(), 300);
+    }, 4000);
+}
+
+// ============================================================
+// ===== BANCO DE DADOS DE NOTAS FISCAIS =====
+// ============================================================
+
+const DB = {
+    notasFiscais: JSON.parse(localStorage.getItem('notas_fiscais_db')) || [],
     produtosNota: JSON.parse(localStorage.getItem('produtos_nota_atual')) || [],
     
-    // Salvar no localStorage
     salvar() {
         localStorage.setItem('notas_fiscais_db', JSON.stringify(this.notasFiscais));
         localStorage.setItem('produtos_nota_atual', JSON.stringify(this.produtosNota));
     },
     
-    // Adicionar nota fiscal
     adicionarNota(nota) {
-        // Verifica se já existe pela chave de acesso
         const existe = this.notasFiscais.find(n => n.chaveAcesso === nota.chaveAcesso);
         if (existe) {
-            // Atualiza dados existentes
             Object.assign(existe, nota);
             existe.atualizadoEm = new Date().toISOString();
         } else {
-            // Adiciona nova nota
             nota.criadoEm = new Date().toISOString();
             nota.atualizadoEm = new Date().toISOString();
             this.notasFiscais.unshift(nota);
@@ -57,111 +945,77 @@ const DB = {
         return nota;
     },
     
-    // Buscar todas as notas
     buscarNotas() {
         return this.notasFiscais;
     },
     
-    // Buscar nota por chave de acesso
     buscarNotaPorChave(chave) {
         return this.notasFiscais.find(n => n.chaveAcesso === chave);
     },
     
-    // Adicionar produtos extraídos da nota
     adicionarProdutosNota(produtos) {
         this.produtosNota = produtos;
         this.salvar();
         return produtos;
     },
     
-    // Buscar produtos da nota atual
     buscarProdutosNota() {
         return this.produtosNota;
     }
 };
 
 // ============================================================
-// ===== FUNÇÕES DE LEITURA E PROCESSAMENTO DO QR CODE =====
+// ===== FUNÇÕES DE LEITURA QR CODE =====
 // ============================================================
 
-/**
- * Função principal que processa o QR Code da nota fiscal
- * Extrai informações e adiciona à lista de compras
- */
 async function processarQRCodeNotaFiscal(qrData) {
     try {
         console.log('📱 QR Code lido:', qrData);
-        
-        // Mostra feedback visual
         mostrarFeedback('⏳ Processando nota fiscal...', 'info');
         
-        // 1. Extrair dados do QR Code
         const dadosNota = extrairDadosNotaFiscal(qrData);
-        
         if (!dadosNota) {
             mostrarFeedback('❌ QR Code inválido ou não reconhecido!', 'erro');
             return false;
         }
         
-        console.log('📄 Dados extraídos da nota:', dadosNota);
+        console.log('📄 Dados extraídos:', dadosNota);
         
-        // 2. Salvar no banco de dados local
         const notaSalva = DB.adicionarNota(dadosNota);
-        console.log('💾 Nota salva no banco:', notaSalva);
+        console.log('💾 Nota salva:', notaSalva);
         
-        // 3. Extrair produtos da nota (usando dados do QR ou API)
         let produtos = [];
-        
-        // Tenta extrair produtos do QR Code (se vierem no formato)
         if (dadosNota.produtos && dadosNota.produtos.length > 0) {
             produtos = dadosNota.produtos;
         } else {
-            // Se não tiver produtos no QR, busca via API (simulação)
             produtos = await buscarProdutosNotaAPI(dadosNota.chaveAcesso);
         }
         
-        // 4. Salvar produtos extraídos
         DB.adicionarProdutosNota(produtos);
-        
-        // 5. Adicionar produtos à lista de compras
         const adicionados = await adicionarProdutosListaCompras(produtos);
         
-        // 6. Atualizar interface
-        mostrarFeedback(`✅ Nota fiscal processada! ${adicionados} produtos adicionados.`, 'sucesso');
-        
-        // 7. Mostrar resumo da nota
+        mostrarFeedback(`✅ Nota processada! ${adicionados} produtos adicionados.`, 'sucesso');
         mostrarResumoNota(dadosNota, produtos);
-        
-        // 8. Forçar recarregamento da lista
         carregar();
         
         return true;
         
     } catch (error) {
-        console.error('❌ Erro ao processar QR Code:', error);
-        mostrarFeedback('❌ Erro ao processar nota fiscal: ' + error.message, 'erro');
+        console.error('❌ Erro:', error);
+        mostrarFeedback('❌ Erro ao processar: ' + error.message, 'erro');
         return false;
     }
 }
 
-/**
- * Extrai dados estruturados do QR Code da nota fiscal
- * Suporta diferentes formatos de QR Code (NFC-e, Danfe, etc.)
- */
 function extrairDadosNotaFiscal(qrData) {
     try {
-        // Se for URL com parâmetros
         if (qrData.includes('?') || qrData.includes('&')) {
             const urlParams = new URLSearchParams(qrData.split('?')[1] || '');
-            
-            // Parâmetros comuns da NFC-e
             const chave = urlParams.get('chave') || urlParams.get('p') || '';
-            const numero = urlParams.get('n') || urlParams.get('numero') || '';
-            
             if (chave) {
                 return {
                     chaveAcesso: chave,
-                    numero: numero,
+                    numero: urlParams.get('n') || '',
                     valorTotal: parseFloat(urlParams.get('v') || '0'),
                     dataEmissao: urlParams.get('d') || new Date().toISOString().split('T')[0],
                     cnpjEmitente: urlParams.get('c') || '',
@@ -171,26 +1025,18 @@ function extrairDadosNotaFiscal(qrData) {
             }
         }
         
-        // Formato compacto (chave de acesso de 44 dígitos)
         if (/^\d{44}$/.test(qrData)) {
-            const chave = qrData;
-            // Extrai informações da chave (formato padrão)
-            const data = chave.substring(0, 6); // AAMMDD
-            const cnpj = chave.substring(6, 20);
-            const numero = chave.substring(25, 34);
-            
             return {
-                chaveAcesso: chave,
-                numero: numero,
-                valorTotal: 0, // Precisa buscar via API
-                dataEmissao: `20${data.substring(0,2)}-${data.substring(2,4)}-${data.substring(4,6)}`,
-                cnpjEmitente: cnpj,
+                chaveAcesso: qrData,
+                numero: qrData.substring(25, 34),
+                valorTotal: 0,
+                dataEmissao: `20${qrData.substring(0,2)}-${qrData.substring(2,4)}-${qrData.substring(4,6)}`,
+                cnpjEmitente: qrData.substring(6, 20),
                 nomeEmitente: 'Desconhecido',
                 produtos: []
             };
         }
         
-        // Tenta parsear como JSON
         try {
             const jsonData = JSON.parse(qrData);
             if (jsonData.chave_acesso || jsonData.chaveAcesso) {
@@ -206,7 +1052,6 @@ function extrairDadosNotaFiscal(qrData) {
             }
         } catch (e) {}
         
-        // Formato com campos separados
         const campos = qrData.split('|');
         if (campos.length >= 2) {
             return {
@@ -223,54 +1068,30 @@ function extrairDadosNotaFiscal(qrData) {
         return null;
         
     } catch (error) {
-        console.error('Erro ao extrair dados do QR:', error);
+        console.error('Erro ao extrair dados:', error);
         return null;
     }
 }
 
-/**
- * Busca os produtos da nota fiscal via API (simulação)
- * Na vida real, isso chamaria uma API da SEFAZ ou serviço de consulta
- */
 async function buscarProdutosNotaAPI(chaveAcesso) {
-    // Simula uma chamada à API
-    console.log('🔍 Buscando produtos da nota:', chaveAcesso);
-    
-    // Simula delay de rede
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Simula resposta com produtos (na vida real, viria da API)
-    const produtosSimulados = [
+    return [
         { produto: 'Arroz', quantidade: 1, preco: 8.89, mercado: 'Miller' },
         { produto: 'Feijão', quantidade: 1, preco: 4.49, mercado: 'Desco' },
         { produto: 'Óleo', quantidade: 1, preco: 5.99, mercado: 'Via' },
-        { produto: 'Açúcar', quantidade: 1, preco: 14.95, mercado: 'Desco' },
-        { produto: 'Café', quantidade: 1, preco: 19.90, mercado: 'Miller' }
+        { produto: 'Açúcar', quantidade: 1, preco: 14.95, mercado: 'Desco' }
     ];
-    
-    // Simula produtos baseados na chave para variar
-    const hash = chaveAcesso.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const quantidade = (hash % 5) + 3; // 3 a 7 produtos
-    
-    return produtosSimulados.slice(0, quantidade);
 }
 
-/**
- * Adiciona os produtos extraídos à lista de compras
- */
 async function adicionarProdutosListaCompras(produtos) {
     let adicionados = 0;
-    
     for (const item of produtos) {
-        // Verifica se já está na lista
         const jaExiste = compras.some(x => 
             x.produto.toLowerCase() === item.produto.toLowerCase() && 
             x.noCarrinho && 
             !x.arquivado
         );
-        
         if (!jaExiste) {
-            // Adiciona com os dados da nota
             compras.push({
                 id: Date.now() + Math.random() + adicionados,
                 produto: item.produto,
@@ -286,113 +1107,19 @@ async function adicionarProdutosListaCompras(produtos) {
             adicionados++;
         }
     }
-    
-    if (adicionados > 0) {
-        salvar(); // Salva no localStorage
-    }
-    
+    if (adicionados > 0) salvar();
     return adicionados;
 }
 
-/**
- * Mostra um resumo da nota fiscal processada
- */
 function mostrarResumoNota(nota, produtos) {
-    const resumo = `
-📋 Resumo da Nota Fiscal:
-• Número: ${nota.numero || 'N/A'}
-• Chave: ${nota.chaveAcesso.substring(0, 10)}...
-• Valor Total: R$ ${nota.valorTotal?.toFixed(2) || 'N/A'}
-• Data: ${nota.dataEmissao || 'N/A'}
-• Emitente: ${nota.nomeEmitente || 'N/A'}
-• Produtos: ${produtos.length} itens encontrados
-    `;
-    
-    console.log(resumo);
-    
-    // Mostra notificação visual
-    mostrarNotificacao('Nota fiscal processada!', `${produtos.length} produtos adicionados à lista.`);
-}
-
-/**
- * Feedback visual para o usuário
- */
-function mostrarFeedback(mensagem, tipo = 'info') {
-    const cores = {
-        info: '#3b82f6',
-        sucesso: '#22c55e',
-        erro: '#ef4444',
-        alerta: '#f59e0b'
-    };
-    
-    // Remove feedbacks antigos
-    const antigos = document.querySelectorAll('.feedback-flutuante');
-    antigos.forEach(el => el.remove());
-    
-    const div = document.createElement('div');
-    div.className = 'feedback-flutuante';
-    div.style.cssText = `
-        position: fixed;
-        bottom: 80px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: ${cores[tipo] || cores.info};
-        color: white;
-        padding: 12px 24px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 14px;
-        z-index: 10000;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        max-width: 90%;
-        text-align: center;
-        animation: fadeInUp 0.3s ease;
-    `;
-    div.textContent = mensagem;
-    document.body.appendChild(div);
-    
-    setTimeout(() => {
-        div.style.animation = 'fadeOutDown 0.3s ease';
-        setTimeout(() => div.remove(), 300);
-    }, 4000);
-}
-
-/**
- * Notificação persistente
- */
-function mostrarNotificacao(titulo, mensagem) {
-    const notificacao = document.createElement('div');
-    notificacao.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #1e293b;
-        color: white;
-        padding: 16px 20px;
-        border-radius: 12px;
-        z-index: 10001;
-        max-width: 350px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        animation: slideInRight 0.4s ease;
-    `;
-    notificacao.innerHTML = `
-        <strong>${titulo}</strong>
-        <p style="margin: 4px 0 0 0; font-size: 13px; color: #94a3b8;">${mensagem}</p>
-    `;
-    document.body.appendChild(notificacao);
-    
-    setTimeout(() => {
-        notificacao.style.animation = 'slideOutRight 0.4s ease';
-        setTimeout(() => notificacao.remove(), 400);
-    }, 5000);
+    console.log('📋 Resumo da Nota:', nota);
 }
 
 // ============================================================
-// ===== FUNÇÃO ATUALIZADA DO SCANNER =====
+// ===== FUNÇÕES DO SCANNER =====
 // ============================================================
 
-// Substitui a função alternarScanner original
-const alternarScannerOriginal = window.alternarScanner;
+let html5QrcodeScanner = null;
 
 window.alternarScanner = function() {
     const btn = document.getElementById("btnIniciarCamera");
@@ -419,21 +1146,16 @@ window.alternarScanner = function() {
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (qrCodeMessage) => {
-            // Processa o QR Code com nossa nova função
             await processarQRCodeNotaFiscal(qrCodeMessage);
-            
-            // Para o scanner após ler
             html5QrcodeScanner.stop().then(() => {
                 btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
                 btn.style.background = "#4f46e5";
                 reader.style.display = 'none';
             }).catch(err => console.log(err));
         },
-        (errorMessage) => {
-            // Ignora erros de leitura contínua
-        }
+        (errorMessage) => {}
     ).catch(err => {
-        alert("❌ Erro ao acessar a câmera. Verifique as permissões.");
+        alert("❌ Erro ao acessar a câmera.");
         btn.innerText = "📷 Escanear QR Code da Nota Gaúcha";
         btn.style.background = "#4f46e5";
         reader.style.display = 'none';
@@ -441,88 +1163,423 @@ window.alternarScanner = function() {
 };
 
 // ============================================================
-// ===== FUNÇÃO PARA VISUALIZAR NOTAS ESCANEADAS =====
+// ===== FUNÇÕES PRINCIPAIS DO SISTEMA =====
 // ============================================================
 
-function visualizarNotasEscaneadas() {
-    const notas = DB.buscarNotas();
-    
-    if (notas.length === 0) {
-        alert('📭 Nenhuma nota fiscal escaneada ainda.');
-        return;
+const itensPadrao = Object.keys(mapaCategorias);
+let gabaritoCustomizado = JSON.parse(localStorage.getItem("gabarito_custom")) || itensPadrao;
+let compras = JSON.parse(localStorage.getItem("compras_v3")) || [];
+let abaAtual = "gabarito";
+let grafico;
+
+function carregar() {
+    const busca = document.getElementById("busca").value.toLowerCase();
+    let pendentes = 0, comprados = 0, totalGeralItens = 0;
+
+    compras.forEach(item => {
+        if (!item.arquivado && item.noCarrinho) {
+            totalGeralItens++;
+            if (item.comprado) comprados++; else pendentes++;
+        }
+    });
+
+    document.getElementById("qtdItens").innerText = pendentes;
+    document.getElementById("qtdComprados").innerText = comprados;
+    document.getElementById("qtdTotalGeral").innerText = totalGeralItens;
+    OfertasDB.atualizarContador();
+
+    if (abaAtual === "gabarito") {
+        paginaGabarito.innerHTML = "";
+        let produtosFiltrados = [...new Set(gabaritoCustomizado)].sort((a, b) => a.localeCompare(b, 'pt', { sensitivity: 'base' }));
+        let categoriesAtivas = {};
+        
+        produtosFiltrados.forEach(prod => {
+            if (busca && !prod.toLowerCase().includes(busca)) return;
+            let cat = obterCategoria(prod);
+            if(!categoriesAtivas[cat]) categoriesAtivas[cat] = [];
+            categoriesAtivas[cat].push(prod);
+        });
+
+        Object.keys(categoriesAtivas).sort().forEach(cat => {
+            paginaGabarito.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
+            categoriesAtivas[cat].forEach(prod => {
+                const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
+                let chavePromo = prod.toLowerCase().trim();
+                
+                let tagPromoHtml = '';
+                const oferta = OfertasDB.buscarTodas().find(o => 
+                    o.produto?.toLowerCase() === chavePromo
+                );
+                
+                if (oferta) {
+                    tagPromoHtml = `<br><span class="tag-melhor-preco">🏷️ Oferta: R$ ${oferta.valorOferta?.toFixed(2) || '0,00'} (${oferta.mercado || 'Desconhecido'})</span>`;
+                }
+
+                paginaGabarito.innerHTML += `
+                <div class="item-card">
+                    <div>
+                        <h3>${prod}</h3>
+                        ${tagPromoHtml}
+                    </div>
+                    <button class="btnAdicionar ${jaAdicionado ? 'ja-adicionado' : ''}" 
+                            onclick="${jaAdicionado ? '' : `adicionarAoCarrinho('${prod.replace(/'/g, "\\'")}')`}">
+                        ${jaAdicionado ? '✔ Na Lista' : '➕ Adicionar'}
+                    </button>
+                </div>`;
+            });
+        });
     }
+
+    if (abaAtual === "carrinho") {
+        document.getElementById("secaoSugestoes").style.display = "none";
+        paginaCarrinho.innerHTML = "";
+        let itensAtivos = compras.filter(x => x.noCarrinho && !x.arquivado);
+
+        if(itensAtivos.length === 0) {
+            paginaCarrinho.innerHTML = `<p style="text-align:center; color:var(--cinza); padding:30px; grid-column: 1 / -1;">Sua lista atual está vazia.</p>`;
+        }
+
+        let categoriesCarrinho = {};
+        itensAtivos.forEach(item => {
+            if (busca && !item.produto.toLowerCase().includes(busca)) return;
+            let cat = obterCategoria(item.produto);
+            if(!categoriesCarrinho[cat]) categoriesCarrinho[cat] = [];
+            categoriesCarrinho[cat].push(item);
+        });
+
+        Object.keys(categoriesCarrinho).sort().forEach(cat => {
+            paginaCarrinho.innerHTML += `<div class="titulo-categoria">${cat}</div>`;
+            categoriesCarrinho[cat].forEach(item => {
+                const indexReal = compras.findIndex(x => x.id === item.id);
+                let preçoSugerido = item.valor || 0;
+                let chavePromo = item.produto.toLowerCase().trim();
+                
+                let textoOferta = "";
+                const oferta = OfertasDB.buscarTodas().find(o => 
+                    o.produto?.toLowerCase() === chavePromo
+                );
+                
+                if (oferta) {
+                    textoOferta = `<br><span class="tag-melhor-preco">🏷️ Oferta: R$ ${oferta.valorOferta?.toFixed(2) || '0,00'} (${oferta.mercado || 'Desconhecido'})</span>`;
+                }
+
+                paginaCarrinho.innerHTML += `
+                <div class="item-card ${item.comprado ? 'comprado' : ''}">
+                    <div class="flex-col">
+                        <div class="topo-card">
+                            <div>
+                                <h3 onclick="toggleDetalhesCard(${item.id})">${item.produto}</h3>
+                                ${textoOferta}
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <button class="btnToggleDetalhes" onclick="toggleDetalhesCard(${item.id})">⚙ Config</button>
+                                <button class="btnRemover" onclick="removerDoCarrinho(${indexReal})">✕</button>
+                            </div>
+                        </div>
+                        
+                        <div id="detalhes-${item.id}" class="detalhes-produto">
+                            <div class="linha-inputs">
+                                <div class="campo">
+                                    <label>Status</label>
+                                    <select id="statusSelect-${item.id}" onchange="alterarStatus(${indexReal}, this.value, ${item.id})">
+                                        <option value="false" ${!item.comprado ? 'selected' : ''}>⚠ Falta</option>
+                                        <option value="true" ${item.comprado ? 'selected' : ''}>✔ Ok</option>
+                                    </select>
+                                </div>
+                                <div class="campo">
+                                    <label>Qtd</label>
+                                    <input type="number" style="width:50px;" min="1" value="${item.quantidade || 1}" onchange="alterarQuantidade(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo">
+                                    <label>Preço Unit.</label>
+                                    <input type="number" style="width:70px;" step="0.01" placeholder="${preçoSugerido ? preçoSugerido.toFixed(2) : '0,00'}" value="${item.valor || ''}" onchange="alterarValor(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo">
+                                    <label>Mercado</label>
+                                    <input type="text" style="width:100px;" placeholder="Ex: Atacadão" value="${item.mercado || ''}" onchange="alterarMercado(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo">
+                                    <label>Data</label>
+                                    <input type="date" style="width:110px;" value="${item.data || ''}" onchange="alterarData(${indexReal}, this.value)">
+                                </div>
+                                <div class="campo" style="margin-left:auto; text-align:right;">
+                                    <label>Subtotal</label>
+                                    <div class="valor-total">R$ ${((item.valor || 0) * (item.quantidade || 1)).toFixed(2)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        });
+    }
+
+    renderizarFavoritos();
+    carregarFiltroProdutosGrafico();
     
-    let mensagem = '📋 NOTAS FISCAIS ESCANEADAS:\n\n';
-    mensagem += '═'.repeat(40) + '\n';
+    // Se estiver na aba de ofertas, carrega as ofertas
+    if (abaAtual === "ofertas") {
+        carregarOfertas();
+    }
+}
+
+function toggleDetalhesCard(id) {
+    const elem = document.getElementById(`detalhes-${id}`);
+    if(elem) elem.classList.toggle("ativo");
+}
+
+function cadastrarNovoProdutoGeral() {
+    const inputBusca = document.getElementById("busca");
+    const nomeNovo = inputBusca.value.trim();
+    if (!nomeNovo) return;
+    if (!gabaritoCustomizado.some(x => x.toLowerCase() === nomeNovo.toLowerCase())) {
+        gabaritoCustomizado.push(nomeNovo);
+        localStorage.setItem("gabarito_custom", JSON.stringify(gabaritoCustomizado));
+    }
+    adicionarAoCarrinho(nomeNovo);
+    inputBusca.value = "";
+    carregar();
+}
+
+function adicionarAoCarrinho(nomeProduto) {
+    compras.push({
+        id: Date.now() + Math.random(),
+        produto: nomeProduto,
+        quantidade: 1,
+        valor: 0,
+        mercado: "",
+        data: new Date().toISOString().split('T')[0],
+        comprado: false,
+        noCarrinho: true,
+        arquivado: false
+    });
+    salvar();
+}
+
+function removerDoCarrinho(index) {
+    if(compras[index].valor === 0) compras.splice(index, 1); else compras[index].noCarrinho = false;
+    salvar();
+}
+
+function mudarAba(aba) {
+    abaAtual = aba;
+    document.querySelectorAll('.menu button').forEach(b => b.classList.remove('ativo'));
+    document.getElementById(`btnAba${aba.charAt(0).toUpperCase() + aba.slice(1)}`).classList.add('ativo');
+
+    paginaGabarito.classList.add("oculto");
+    paginaCarrinho.classList.add("oculto");
+    paginaHistorico.classList.add("oculto");
+    document.getElementById("paginaOfertas").classList.add("oculto");
+    document.getElementById("secaoScanner").classList.add("oculto");
+
+    if (aba === "gabarito") {
+        paginaGabarito.classList.remove("oculto");
+        document.getElementById("secaoScanner").classList.remove("oculto");
+        document.getElementById("secaoSugestoes").style.display = "block";
+    } else if (aba === "carrinho") {
+        paginaCarrinho.classList.remove("oculto");
+        document.getElementById("secaoSugestoes").style.display = "none";
+    } else if (aba === "historico") {
+        paginaHistorico.classList.remove("oculto");
+        document.getElementById("secaoSugestoes").style.display = "none";
+    } else if (aba === "ofertas") {
+        document.getElementById("paginaOfertas").classList.remove("oculto");
+        document.getElementById("secaoSugestoes").style.display = "none";
+        carregarOfertas();
+    }
+    carregar();
+}
+
+function salvar() {
+    localStorage.setItem("compras_v3", JSON.stringify(compras));
+    carregar();
+}
+
+function alterarStatus(index, status, id) {
+    compras[index].comprado = (status === "true");
+    salvar();
+}
+
+function alterarQuantidade(index, qtd) { compras[index].quantidade = parseFloat(qtd); salvar(); }
+function alterarValor(index, val) { compras[index].valor = parseFloat(val); salvar(); }
+function alterarMercado(index, mkt) { compras[index].mercado = mkt; salvar(); }
+function alterarData(index, dt) { compras[index].data = dt; salvar(); }
+
+function novoMes() {
+    if(confirm("Deseja fechar o mês e arquivar a lista atual?")) {
+        compras.forEach(item => { if(item.comprado) item.arquivado = true; item.noCarrinho = false; });
+        salvar();
+    }
+}
+
+function carregarFiltroProdutosGrafico() {
+    const select = document.getElementById("produtoHistorico");
+    if (!select) return;
+    const produtos = [...new Set(compras.filter(x => x.comprado).map(x => x.produto))];
+    select.innerHTML = '<option value="">Selecione um produto</option>';
+    produtos.sort().forEach(p => {
+        select.innerHTML += `<option value="${p}">${p}</option>`;
+    });
+}
+
+function renderizarFavoritos() {
+    const boxSugestoes = document.getElementById("secaoSugestoes");
+    const divFavs = document.getElementById("listaFavoritos");
+    divFavs.innerHTML = "";
     
-    notas.forEach((nota, index) => {
-        mensagem += `📄 NOTA #${index + 1}\n`;
-        mensagem += `   Chave: ${nota.chaveAcesso.substring(0, 15)}...\n`;
-        mensagem += `   Número: ${nota.numero || 'N/A'}\n`;
-        mensagem += `   Emitente: ${nota.nomeEmitente || 'N/A'}\n`;
-        mensagem += `   Data: ${nota.dataEmissao || 'N/A'}\n`;
-        mensagem += `   Valor: R$ ${nota.valorTotal?.toFixed(2) || '0,00'}\n`;
-        mensagem += `   Escaneado: ${new Date(nota.criadoEm).toLocaleString()}\n`;
-        mensagem += '─'.repeat(40) + '\n';
+    let contagem = {};
+    compras.filter(x => x.comprado).forEach(x => {
+        contagem[x.produto] = (contagem[x.produto] || 0) + 1;
     });
     
-    // Mostra em um alert ou modal
-    alert(mensagem);
+    let ordenados = Object.keys(contagem).filter(prod => contagem[prod] >= 2);
+    ordenados.sort((a,b) => contagem[b] - contagem[a]);
+    
+    if(ordenados.length === 0 || abaAtual !== "gabarito") {
+        boxSugestoes.style.display = "none";
+        return;
+    }
+    boxSugestoes.style.display = "block";
+
+    let exibidos = 0;
+    for (let i = 0; i < ordenados.length; i++) {
+        if (exibidos >= 7) break;
+        let prod = ordenados[i];
+        const jaAdicionado = compras.some(x => x.produto === prod && x.noCarrinho && !x.arquivado);
+        if(!jaAdicionado) {
+            divFavs.innerHTML += `<div class="badge-item" onclick="adicionarAoCarrinho('${prod.replace(/'/g, "\\'")}')">➕ ${prod}</div>`;
+            exibidos++;
+        }
+    }
+    if (exibidos === 0) boxSugestoes.style.display = "none";
+}
+
+function importarDoExtrator() {
+    const dadosExtrator = localStorage.getItem("produtos_extrator");
+    if (!dadosExtrator) {
+        alert("⚠️ Nenhum produto encontrado no extrator.");
+        return;
+    }
+    try {
+        const produtos = JSON.parse(dadosExtrator);
+        if (!produtos || produtos.length === 0) {
+            alert("⚠️ Nenhum produto válido encontrado.");
+            return;
+        }
+        let adicionados = 0;
+        for (const item of produtos) {
+            const existe = compras.some(x => 
+                x.produto.toLowerCase() === item.produto.toLowerCase() && 
+                x.noCarrinho && 
+                !x.arquivado
+            );
+            if (!existe) {
+                compras.push({
+                    id: Date.now() + Math.random() + adicionados,
+                    produto: item.produto,
+                    quantidade: 1,
+                    valor: item.preco || 0,
+                    mercado: item.mercado || "DESCO",
+                    data: new Date().toISOString().split('T')[0],
+                    comprado: false,
+                    noCarrinho: true,
+                    arquivado: false,
+                    origem: "extrator"
+                });
+                adicionados++;
+            }
+        }
+        salvar();
+        alert(`✅ ${adicionados} produtos adicionados à lista!`);
+    } catch (e) {
+        alert("❌ Erro ao importar produtos.");
+    }
 }
 
 // ============================================================
-// ===== INJEÇÃO DE ESTILOS PARA ANIMAÇÕES =====
+// ===== FUNÇÕES DE BACKUP =====
 // ============================================================
 
-const styleAnimations = document.createElement('style');
-styleAnimations.textContent = `
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-        to { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
-    @keyframes fadeOutDown {
-        from { opacity: 1; transform: translateX(-50%) translateY(0); }
-        to { opacity: 0; transform: translateX(-50%) translateY(20px); }
-    }
-    @keyframes slideInRight {
-        from { opacity: 0; transform: translateX(100px); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes slideOutRight {
-        from { opacity: 1; transform: translateX(0); }
-        to { opacity: 0; transform: translateX(100px); }
-    }
-`;
-document.head.appendChild(styleAnimations);
+function exportarDados() {
+    const dados = {
+        compras: compras,
+        gabarito: gabaritoCustomizado,
+        ofertas: OfertasDB.buscarTodas(),
+        notas: DB.buscarNotas(),
+        data: new Date().toISOString()
+    };
+    const json = JSON.stringify(dados, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
 
-// ============================================================
-// ===== ADICIONA BOTÃO PARA VISUALIZAR NOTAS =====
-// ============================================================
-
-// Adiciona botão no menu
-document.addEventListener('DOMContentLoaded', function() {
-    const menu = document.querySelector('.menu');
-    if (menu) {
-        const btnNotas = document.createElement('button');
-        btnNotas.className = 'btn-importar';
-        btnNotas.innerHTML = '<span>📄</span> Notas';
-        btnNotas.onclick = visualizarNotasEscaneadas;
-        btnNotas.style.background = '#8b5cf6';
-        btnNotas.style.color = 'white';
-        menu.appendChild(btnNotas);
-    }
-});
+function importarDados() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const dados = JSON.parse(event.target.result);
+                if (dados.compras) {
+                    compras = dados.compras;
+                    localStorage.setItem("compras_v3", JSON.stringify(compras));
+                }
+                if (dados.gabarito) {
+                    gabaritoCustomizado = dados.gabarito;
+                    localStorage.setItem("gabarito_custom", JSON.stringify(gabaritoCustomizado));
+                }
+                if (dados.ofertas) {
+                    OfertasDB.ofertas = dados.ofertas;
+                    OfertasDB.salvar();
+                }
+                if (dados.notas) {
+                    DB.notasFiscais = dados.notas;
+                    DB.salvar();
+                }
+                alert('✅ Dados importados com sucesso!');
+                carregar();
+                carregarOfertas();
+            } catch (error) {
+                alert('❌ Erro ao importar dados: ' + error.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
 
 // ============================================================
 // ===== INICIALIZAÇÃO =====
 // ============================================================
 
-console.log('🚀 Sistema de leitura de QR Code inicializado!');
-console.log('📊 Notas escaneadas:', DB.buscarNotas().length);
+console.log('🚀 Sistema inicializado!');
+console.log('📊 Ofertas salvas:', OfertasDB.buscarTodas().length);
+console.log('📋 Itens na lista:', compras.length);
 
-// Suas funções existentes continuam aqui...
-// (carregar, salvar, etc.)
+// Carrega as ofertas iniciais se houver
+carregar();
+carregarOfertas();
+OfertasDB.atualizarContador();
 
+// Adiciona ofertas de exemplo se não houver nenhuma
+if (OfertasDB.buscarTodas().length === 0) {
+    const ofertasExemplo = [
+        { produto: "Arroz", valorOferta: 18.90, mercado: "Supermercado Central" },
+        { produto: "Feijão", valorOferta: 4.49, mercado: "Desco" },
+        { produto: "Óleo", valorOferta: 5.99, mercado: "Via" }
+    ];
+    OfertasDB.adicionarMultiplas(ofertasExemplo);
+    carregarOfertas();
+}
 </script>
 </body>
 </html>
